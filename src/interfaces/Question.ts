@@ -2,9 +2,10 @@ import { RowDataPacket } from 'mysql2';
 
 interface Question {
   id: number;
-  order: number;
+  question_order: number;
   question: string;
   weight: number;
+  active: 'true' | 'false';
 }
 
 interface GetQuestion extends RowDataPacket, Question {}

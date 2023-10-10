@@ -37,10 +37,11 @@ const postUser = async (user: PostUser) => {
 };
 
 const putUser = async (data: PutUser, id: number): Promise<boolean> => {
-  const sql = promisePool.format('UPDATE users SET ? WHERE user_id = ?;', [
+  const sql = promisePool.format('UPDATE users SET ? WHERE id = ?;', [
     data,
     id,
   ]);
+
   const [headers] = await promisePool.query<ResultSetHeader>(sql);
   if (headers.affectedRows === 0) {
     throw new CustomError('User not found', 404);
