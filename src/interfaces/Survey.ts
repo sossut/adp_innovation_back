@@ -8,9 +8,9 @@ interface Survey {
   end_date: string;
   min_responses: number;
   max_responses: number;
-  status: 'ongoing' | 'closed';
-  user_id: User;
-  key: number;
+  survey_status: 'ongoing' | 'closed';
+  user_id: User | number;
+  survey_key: string;
   housing_company_id: HousingCompany;
 }
 
