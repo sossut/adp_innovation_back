@@ -68,7 +68,7 @@ const userPut = async (
     }
 
     const user = req.body;
-    const result = await putUser(user, req.params.id, (req.user as User).role);
+    const result = await putUser(user, req.params.id);
     if (result) {
       res.json({
         message: 'user updated',
@@ -95,7 +95,7 @@ const userPutCurrent = async (
     }
     const user = req.body;
     console.log(req.user);
-    const result = await putUser(user, (req.user as User).id, (req.user as User).role);
+    const result = await putUser(user, (req.user as User).id);
     if (result) {
       res.json({
         message: 'user updated',
