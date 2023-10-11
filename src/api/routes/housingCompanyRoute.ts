@@ -12,6 +12,7 @@ router
     passport.authenticate('jwt', { session: false }),
     body('name').isString().isLength({ min: 1, max: 255 }).notEmpty().escape(),
     body('address_id').isNumeric().notEmpty().escape(),
+    body('apartment_count').isNumeric().isLength({ min: 1, max: 1000 }).notEmpty().escape(),
     housingCompanyPost,
   );
 

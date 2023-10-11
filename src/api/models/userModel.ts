@@ -36,12 +36,14 @@ const postUser = async (user: PostUser) => {
   return headers.insertId;
 };
 
-const putUser = async (data: PutUser, id: number): Promise<boolean> => {
+const putUser = async (data: PutUser, id: number, role: string): Promise<boolean> => {
   const sql = promisePool.format('UPDATE users SET ? WHERE id = ?;', [
     data,
     id,
   ]);
-
+  if (role !== 'admin') {
+    throw new CustomError('Unauthorized', 403);
+  }
   const [headers] = await promisePool.query<ResultSetHeader>(sql);
   if (headers.affectedRows === 0) {
     throw new CustomError('User not found', 404);

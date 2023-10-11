@@ -6,7 +6,7 @@ import { GetHousingCompany, HousingCompany, PostHousingCompany, PutHousingCompan
 //TODO add role check
 const getAllHousingCompanies = async (): Promise<HousingCompany[]> => {
   const [rows] = await promisePool.execute<GetHousingCompany[]>(
-    `SELECT housing_companies.id, housing_companies.NAME,
+    `SELECT housing_companies.id, housing_companies.NAME, apartment_count, address_id, housing_companies.user_id,
     JSON_OBJECT('user_id', users.id, 'user_name', users.user_name) AS user,
     JSON_OBJECT('address_id', addresses.id, 'street', addresses.street, 'number', addresses.number) AS address,
 	  JSON_OBJECT('postcode_id', postcodes.id, 'code', postcodes.code, 'name', postcodes.name) AS postcode,
@@ -36,7 +36,7 @@ const getAllHousingCompanies = async (): Promise<HousingCompany[]> => {
 //TODO add role check
 const getHousingCompany = async (id: number) => {
   const [rows] = await promisePool.execute<GetHousingCompany[]>(
-    `SELECT housing_companies.id, housing_companies.NAME, address_id, housing_companies.user_id,
+    `SELECT housing_companies.id, housing_companies.NAME, apartment_count, address_id, housing_companies.user_id,
     JSON_OBJECT('user_id', users.id, 'user_name', users.user_name) AS user,
     JSON_OBJECT('address_id', addresses.id, 'street', addresses.street, 'number', addresses.number) AS address,
 	  JSON_OBJECT('postcode_id', postcodes.id, 'code', postcodes.code, 'name', postcodes.name) AS postcode,
@@ -72,17 +72,17 @@ const postHousingCompany = async (data: PostHousingCompany): Promise<number> => 
   return headers.insertId;
 };
 
-const putHousingCompany = async (housingCompany: PutHousingCompany, id: number, userId: number, role: string): Promise<boolean> => {
+const putHousingCompany = async (housingCompany: PutHousingCompany, id: number, userID: number, role: string): Promise<boolean> => {
   console.log(housingCompany);
-  const name = housingCompany.name;
-  let sql = 'UPDATE housing_companies SET name = ? WHERE id = ? AND user_id = ?';
-  let params = [name, id, userId];
+  
+  let sql = 'UPDATE housing_companies SET ? WHERE id = ? AND user_id = ?';
+  let params = [housingCompany, id, userID];
   if (role === 'admin') {
-    sql = 'UPDATE housing_companies SET name = ? WHERE id = ?';
-    params = [name, id];
+    sql = 'UPDATE housing_companies SET ? WHERE id = ?';
+    params = [housingCompany, id];
   }
-  console.log(params);
-  const [headers] = await promisePool.execute<ResultSetHeader>(sql, params);
+  const format = promisePool.format(sql, params);
+  const [headers] = await promisePool.execute<ResultSetHeader>(format);
   if (headers.affectedRows === 0) {
     throw new CustomError('Housing company not found', 404);
   }
