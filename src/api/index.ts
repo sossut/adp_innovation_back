@@ -8,7 +8,9 @@ import MessageResponse from '../interfaces/MessageResponse';
 import passport from 'passport';
 
 
+
 const router = express.Router();
+
 router.use(passport.initialize());
 
 router.get<{}, MessageResponse>('/', (req, res) => {

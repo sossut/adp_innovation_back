@@ -3,6 +3,7 @@ import CustomError from '../../classes/CustomError';
 import { ResultSetHeader } from 'mysql2';
 import { GetUser, PostUser, PutUser, User } from '../../interfaces/User';
 
+
 const getAllUsers = async (): Promise<User[]> => {
   const [rows] = await promisePool.execute<GetUser[]>(
     `SELECT id, user_name, email, role
@@ -49,6 +50,7 @@ const putUser = async (data: PutUser, id: number): Promise<boolean> => {
   if (headers.affectedRows === 0) {
     throw new CustomError('User not found', 404);
   }
+
   return true;
 };
 

@@ -4,7 +4,10 @@ import { ResultSetHeader } from 'mysql2';
 import { GetHousingCompany, HousingCompany, PostHousingCompany, PutHousingCompany } from '../../interfaces/HousingCompany';
 
 //TODO add role check
-const getAllHousingCompanies = async (): Promise<HousingCompany[]> => {
+const getAllHousingCompanies = async (role: string): Promise<HousingCompany[]> => {
+  if (role !== 'admin') {
+    throw new CustomError('Not authorized', 401);
+  }
   const [rows] = await promisePool.execute<GetHousingCompany[]>(
     `SELECT housing_companies.id, housing_companies.NAME, apartment_count, address_id, housing_companies.user_id,
     JSON_OBJECT('user_id', users.id, 'user_name', users.user_name) AS user,
@@ -34,9 +37,15 @@ const getAllHousingCompanies = async (): Promise<HousingCompany[]> => {
   return housingCompanies;
 };
 //TODO add role check
-const getHousingCompany = async (id: number) => {
-  const [rows] = await promisePool.execute<GetHousingCompany[]>(
-    `SELECT housing_companies.id, housing_companies.NAME, apartment_count, address_id, housing_companies.user_id,
+const getHousingCompany = async (id: number, userID: number, role: string) => {
+  const [hc] = await promisePool.execute<GetHousingCompany[]>(
+    'SELECT user_id FROM housing_companies WHERE id = ?',
+    [id],
+  );
+  
+  if (hc[0].user_id === userID || role === 'admin') {
+    const [rows] = await promisePool.execute<GetHousingCompany[]>(
+      `SELECT housing_companies.id, housing_companies.NAME, apartment_count, address_id, housing_companies.user_id,
     JSON_OBJECT('user_id', users.id, 'user_name', users.user_name) AS user,
     JSON_OBJECT('address_id', addresses.id, 'street', addresses.street, 'number', addresses.number) AS address,
 	  JSON_OBJECT('postcode_id', postcodes.id, 'code', postcodes.code, 'name', postcodes.name) AS postcode,
@@ -52,12 +61,14 @@ const getHousingCompany = async (id: number) => {
     ON postcodes.city_id = cities.id
     WHERE housing_companies.id = ?
     `,
-    [id],
-  );
-  if (rows.length === 0) {
-    throw new CustomError('Housing company not found', 404);
+      [id],
+    );
+    if (rows.length === 0) {
+      throw new CustomError('Housing company not found', 404);
+    }
+    return rows[0] as HousingCompany;
   }
-  return rows[0] as HousingCompany;
+  
 };
 
 const postHousingCompany = async (data: PostHousingCompany): Promise<number> => {

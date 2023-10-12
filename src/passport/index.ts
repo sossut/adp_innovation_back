@@ -4,6 +4,9 @@ import { Strategy as JWTStrategy, ExtractJwt } from 'passport-jwt';
 import bcrypt from 'bcryptjs';
 import { getUserLogin } from '../api/models/userModel';
 
+
+
+
 passport.use(
   new Strategy(async (username, password, done) => {
     try {
@@ -21,7 +24,7 @@ passport.use(
     }
   }),
 );
-
+  
 // TODO: JWT strategy for handling bearer token
 // consider .env for secret, e.g. secretOrKey: process.env.JWT_SECRET
 passport.use(
@@ -38,3 +41,4 @@ passport.use(
 );
 
 export default passport;
+      

@@ -8,7 +8,9 @@ import { User } from '../../interfaces/User';
 
 const housingCompanyListGet = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const housingCompanies = await getAllHousingCompanies();
+    const user = req.user as User;
+    console.log(user);
+    const housingCompanies = await getAllHousingCompanies((req.user as User).role);
     console.log(housingCompanies);
     res.json(housingCompanies);
   } catch (error) {
@@ -16,7 +18,7 @@ const housingCompanyListGet = async (req: Request, res: Response, next: NextFunc
   }
 };
 
-const housingCompanyGet = async (req: Request, res: Response, next: NextFunction) => {
+const housingCompanyGet = async (req: Request<{ id: string }, {}, {}>, res: Response, next: NextFunction) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const messages = errors
@@ -27,7 +29,8 @@ const housingCompanyGet = async (req: Request, res: Response, next: NextFunction
   }
   const id = parseInt(req.params.id);
   try {
-    const housingCompany = await getHousingCompany(id);
+
+    const housingCompany = await getHousingCompany(id, ((req.user as User).id), (req.user as User).role);
     res.json(housingCompany);
   } catch (error) {
     next(error);
@@ -36,7 +39,7 @@ const housingCompanyGet = async (req: Request, res: Response, next: NextFunction
 
 const housingCompanyPost = async (req: Request<{}, {}, PostHousingCompany>, res: Response, next: NextFunction) => {
   const errors = validationResult(req);
-  console.log(req.body);
+
   if (!errors.isEmpty()) {
     const messages = errors
       .array()

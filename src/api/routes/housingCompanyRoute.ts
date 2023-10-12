@@ -7,7 +7,9 @@ const router = express.Router();
 
 router
   .route('/')
-  .get(housingCompanyListGet)
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    housingCompanyListGet)
   .post(
     passport.authenticate('jwt', { session: false }),
     body('name').isString().isLength({ min: 1, max: 255 }).notEmpty().escape(),
@@ -18,7 +20,9 @@ router
 
 router
   .route('/:id')
-  .get(param('id').isNumeric(), housingCompanyGet)
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    param('id').isNumeric(), housingCompanyGet)
   .put(
     passport.authenticate('jwt', { session: false }),
     param('id').isNumeric(),
