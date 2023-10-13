@@ -39,8 +39,8 @@ const getAnswersBySurvey = async (surveyID: number): Promise<GetAnswer[]> => {
 
 const postAnswer = async (answer: PostAnswer) => {
   const [headers] = await promisePool.execute<ResultSetHeader>(
-    'INSERT INTO answers (answer, question_id) VALUES (?, ?);',
-    [answer.answer, answer.question_id],
+    'INSERT INTO answers (answer, question_id, survey_id) VALUES (?, ?, ?);',
+    [answer.answer, answer.question_id, answer.survey_id],
   );
   if (headers.affectedRows === 0) {
     throw new CustomError('Answer not created', 400);
