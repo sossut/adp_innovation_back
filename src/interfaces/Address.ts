@@ -1,11 +1,10 @@
 import { RowDataPacket } from 'mysql2';
-import { Postcode } from './Postcode';
+import { Street } from './Street';
 
 interface Address {
   id: number;
-  street: string;
   number: string;
-  postcode_id: Postcode;
+  street_id: number | Street;
 }
 
 interface GetAddress extends RowDataPacket, Address {}

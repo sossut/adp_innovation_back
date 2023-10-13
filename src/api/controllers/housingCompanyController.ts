@@ -1,5 +1,14 @@
 import { validationResult } from 'express-validator';
-import { getAllHousingCompanies, getHousingCompany, postHousingCompany, putHousingCompany, deleteHousingCompany } from '../models/housingCompanyModel';
+import { getAllHousingCompanies,
+  getHousingCompany,
+  postHousingCompany,
+  putHousingCompany,
+  deleteHousingCompany,
+  getHousingCompaniesByUser,
+  getHousingCompaniesByPostcode,
+  getHousingCompaniesByCity,
+  getHousingCompaniesByStreet,
+} from '../models/housingCompanyModel';
 import { Request, Response, NextFunction } from 'express';
 import { HousingCompany, PostHousingCompany } from '../../interfaces/HousingCompany';
 import CustomError from '../../classes/CustomError';
@@ -32,6 +41,84 @@ const housingCompanyGet = async (req: Request<{ id: string }, {}, {}>, res: Resp
 
     const housingCompany = await getHousingCompany(id, ((req.user as User).id), (req.user as User).role);
     res.json(housingCompany);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const housingCompaniesByUserGet = async (req: Request<{ id: string }, {}, {}>, res: Response, next: NextFunction) => {
+  console.log(req.params.id);
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const messages = errors
+      .array()
+      .map((error) => `${error.msg}: ${error.param}`)
+      .join(', ');
+    throw new CustomError(messages, 400);
+  }
+  const id = parseInt(req.params.id);
+  try {
+    const housingCompanies = await getHousingCompaniesByUser(id);
+    res.json(housingCompanies);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const housingCompaniesByPostcodeGet = async (req: Request<{ id: string }, {}, {}>, res: Response, next: NextFunction) => {
+  console.log(req.params.id);
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const messages = errors
+      .array()
+      .map((error) => `${error.msg}: ${error.param}`)
+      .join(', ');
+    throw new CustomError(messages, 400);
+  }
+  const postcodeID = parseInt(req.params.id);
+  try {
+    const housingCompanies = await getHousingCompaniesByPostcode(postcodeID);
+    res.json(housingCompanies);
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+//TODO role check and user_id
+const housingCompaniesByCityGet = async (req: Request<{ id: string }, {}, {}>, res: Response, next: NextFunction) => {
+  console.log(req.params.id);
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const messages = errors
+      .array()
+      .map((error) => `${error.msg}: ${error.param}`)
+      .join(', ');
+    throw new CustomError(messages, 400);
+  }
+  const city = parseInt(req.params.id);
+  try {
+    const housingCompanies = await getHousingCompaniesByCity(city);
+    res.json(housingCompanies);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const housingCompaniesByStreetGet = async (req: Request<{ id: string }, {}, {}>, res: Response, next: NextFunction) => {
+  console.log(req.params.id);
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const messages = errors
+      .array()
+      .map((error) => `${error.msg}: ${error.param}`)
+      .join(', ');
+    throw new CustomError(messages, 400);
+  }
+  const street = parseInt(req.params.id);
+  try {
+    const housingCompanies = await getHousingCompaniesByStreet(street);
+    res.json(housingCompanies);
   } catch (error) {
     next(error);
   }
@@ -110,4 +197,13 @@ const housingCompanyDelete = async (req: Request<{ id: string }>, res: Response,
   }
 };
 
-export { housingCompanyListGet, housingCompanyGet, housingCompanyPost, housingCompanyPut, housingCompanyDelete };
+export { housingCompanyListGet,
+  housingCompanyGet,
+  housingCompaniesByUserGet,
+  housingCompaniesByPostcodeGet,
+  housingCompaniesByCityGet,
+  housingCompaniesByStreetGet,
+  housingCompanyPost,
+  housingCompanyPut,
+  housingCompanyDelete,
+};

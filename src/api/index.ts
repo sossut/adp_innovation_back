@@ -4,6 +4,7 @@ import housingCompanyRoute from './routes/housingCompanyRoute';
 import authRoute from './routes/authRoute';
 import questionRoute from './routes/questionRoute';
 import surveyRoute from './routes/surveyRoute';
+import answerRoute from './routes/answerRoute';
 import MessageResponse from '../interfaces/MessageResponse';
 import passport from 'passport';
 
@@ -24,5 +25,6 @@ router.use('/user', userRoute);
 router.use('/housing_company', housingCompanyRoute);
 router.use('/question', questionRoute);
 router.use('/survey', surveyRoute);
+router.use('/answer', answerRoute);
 
 export default router;

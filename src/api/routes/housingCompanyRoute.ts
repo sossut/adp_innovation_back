@@ -1,5 +1,15 @@
 import express from 'express';
-import { housingCompanyDelete, housingCompanyGet, housingCompanyListGet, housingCompanyPost, housingCompanyPut } from '../controllers/housingCompanyController';
+import { 
+  housingCompaniesByCityGet,
+  housingCompaniesByPostcodeGet,
+  housingCompaniesByUserGet,
+  housingCompaniesByStreetGet,
+  housingCompanyDelete,
+  housingCompanyGet,
+  housingCompanyListGet,
+  housingCompanyPost,
+  housingCompanyPut,
+} from '../controllers/housingCompanyController';
 import { body, param } from 'express-validator';
 import passport from 'passport';
 
@@ -34,4 +44,27 @@ router
     housingCompanyDelete,
   );
 
+router
+  .route('/user/:id')
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    param('id').isNumeric(), housingCompaniesByUserGet);
+
+router
+  .route('/postcode/:id')
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    param('id').isString().notEmpty().escape(), housingCompaniesByPostcodeGet);
+
+router
+  .route('/city/:id')
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    param('id').isString().notEmpty().escape(), housingCompaniesByCityGet);
+
+router
+  .route('/street/:id')
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    param('id').isString().notEmpty().escape(), housingCompaniesByStreetGet);    
 export default router;

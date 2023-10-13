@@ -3,7 +3,7 @@ import CustomError from '../../classes/CustomError';
 import { ResultSetHeader } from 'mysql2';
 import { GetHousingCompany, HousingCompany, PostHousingCompany, PutHousingCompany } from '../../interfaces/HousingCompany';
 
-//TODO add role check
+
 const getAllHousingCompanies = async (role: string): Promise<HousingCompany[]> => {
   if (role !== 'admin') {
     throw new CustomError('Not authorized', 401);
@@ -11,16 +11,18 @@ const getAllHousingCompanies = async (role: string): Promise<HousingCompany[]> =
   const [rows] = await promisePool.execute<GetHousingCompany[]>(
     `SELECT housing_companies.id, housing_companies.NAME, apartment_count, address_id, housing_companies.user_id,
     JSON_OBJECT('user_id', users.id, 'user_name', users.user_name) AS user,
-    JSON_OBJECT('address_id', addresses.id, 'street', addresses.street, 'number', addresses.number) AS address,
-	  JSON_OBJECT('postcode_id', postcodes.id, 'code', postcodes.code, 'name', postcodes.name) AS postcode,
+    JSON_OBJECT('address_id', addresses.id, 'street', streets.name, 'number', addresses.number) AS address,
+	 JSON_OBJECT('postcode_id', postcodes.id, 'code', postcodes.code, 'name', postcodes.name) AS postcode,
     JSON_OBJECT('city_id', cities.id, 'name', cities.name) AS city
     FROM housing_companies
     JOIN users
     ON housing_companies.user_id = users.id
     JOIN addresses
     ON housing_companies.address_id = addresses.id
+    JOIN streets
+    ON addresses.street_id = streets.id
     JOIN postcodes
-    ON addresses.postcode_id = postcodes.id
+    ON streets.postcode_id = postcodes.id
     JOIN cities
     ON postcodes.city_id = cities.id
     `,
@@ -36,7 +38,7 @@ const getAllHousingCompanies = async (role: string): Promise<HousingCompany[]> =
   }));
   return housingCompanies;
 };
-//TODO add role check
+
 const getHousingCompany = async (id: number, userID: number, role: string) => {
   const [hc] = await promisePool.execute<GetHousingCompany[]>(
     'SELECT user_id FROM housing_companies WHERE id = ?',
@@ -47,16 +49,18 @@ const getHousingCompany = async (id: number, userID: number, role: string) => {
     const [rows] = await promisePool.execute<GetHousingCompany[]>(
       `SELECT housing_companies.id, housing_companies.NAME, apartment_count, address_id, housing_companies.user_id,
     JSON_OBJECT('user_id', users.id, 'user_name', users.user_name) AS user,
-    JSON_OBJECT('address_id', addresses.id, 'street', addresses.street, 'number', addresses.number) AS address,
-	  JSON_OBJECT('postcode_id', postcodes.id, 'code', postcodes.code, 'name', postcodes.name) AS postcode,
+    JSON_OBJECT('address_id', addresses.id, 'street', streets.name, 'number', addresses.number) AS address,
+	 JSON_OBJECT('postcode_id', postcodes.id, 'code', postcodes.code, 'name', postcodes.name) AS postcode,
     JSON_OBJECT('city_id', cities.id, 'name', cities.name) AS city
     FROM housing_companies
     JOIN users
     ON housing_companies.user_id = users.id
     JOIN addresses
     ON housing_companies.address_id = addresses.id
+    JOIN streets
+    ON addresses.street_id = streets.id
     JOIN postcodes
-    ON addresses.postcode_id = postcodes.id
+    ON streets.postcode_id = postcodes.id
     JOIN cities
     ON postcodes.city_id = cities.id
     WHERE housing_companies.id = ?
@@ -69,6 +73,144 @@ const getHousingCompany = async (id: number, userID: number, role: string) => {
     return rows[0] as HousingCompany;
   }
   
+};
+//TODO add role check and user_id
+const getHousingCompaniesByUser = async (userID: number): Promise<HousingCompany[]> => {
+  const [rows] = await promisePool.execute<GetHousingCompany[]>(
+    `SELECT housing_companies.id, housing_companies.NAME, apartment_count, address_id, housing_companies.user_id,
+    JSON_OBJECT('user_id', users.id, 'user_name', users.user_name) AS user,
+    JSON_OBJECT('address_id', addresses.id, 'street', streets.name, 'number', addresses.number) AS address,
+	 JSON_OBJECT('postcode_id', postcodes.id, 'code', postcodes.code, 'name', postcodes.name) AS postcode,
+    JSON_OBJECT('city_id', cities.id, 'name', cities.name) AS city
+    FROM housing_companies
+    JOIN users
+    ON housing_companies.user_id = users.id
+    JOIN addresses
+    ON housing_companies.address_id = addresses.id
+    JOIN streets
+    ON addresses.street_id = streets.id
+    JOIN postcodes
+    ON streets.postcode_id = postcodes.id
+    JOIN cities
+    ON postcodes.city_id = cities.id
+    WHERE housing_companies.user_id = ?
+    `,
+    [userID],
+  );
+  if (rows.length === 0) {
+    throw new CustomError('No housing companies found', 404);
+  }
+  const housingCompanies: HousingCompany[] = rows.map((row) => ({
+    ...row,
+    user: JSON.parse(row.user?.toString() || '{}'),
+    postcode: JSON.parse(row.postcode?.toString() || '{}'),
+    city: JSON.parse(row.city?.toString() || '{}'),
+  }));
+  return housingCompanies;
+};
+
+//TODO add role check and user_id
+const getHousingCompaniesByPostcode = async (postcodeID: number): Promise<HousingCompany[]> => {
+  console.log(postcodeID);
+  const [rows] = await promisePool.execute<GetHousingCompany[]>(
+    `SELECT housing_companies.id, housing_companies.NAME, apartment_count, address_id, housing_companies.user_id,
+    JSON_OBJECT('user_id', users.id, 'user_name', users.user_name) AS user,
+    JSON_OBJECT('address_id', addresses.id, 'street', streets.name, 'number', addresses.number) AS address,
+	 JSON_OBJECT('postcode_id', postcodes.id, 'code', postcodes.code, 'name', postcodes.name) AS postcode,
+    JSON_OBJECT('city_id', cities.id, 'name', cities.name) AS city
+    FROM housing_companies
+    JOIN users
+    ON housing_companies.user_id = users.id
+    JOIN addresses
+    ON housing_companies.address_id = addresses.id
+    JOIN streets
+    ON addresses.street_id = streets.id
+    JOIN postcodes
+    ON streets.postcode_id = postcodes.id
+    JOIN cities
+    ON postcodes.city_id = cities.id
+    WHERE postcodes.id = ?
+    `,
+    [postcodeID],
+  );
+  if (rows.length === 0) {
+    throw new CustomError('No housing companies found', 404);
+  }
+  const housingCompanies: HousingCompany[] = rows.map((row) => ({
+    ...row,
+    user: JSON.parse(row.user?.toString() || '{}'),
+    postcode: JSON.parse(row.postcode?.toString() || '{}'),
+    city: JSON.parse(row.city?.toString() || '{}'),
+  }));
+  return housingCompanies;
+};
+
+const getHousingCompaniesByCity = async (cityID: number): Promise<HousingCompany[]> => {
+  const [rows] = await promisePool.execute<GetHousingCompany[]>(
+    `SELECT housing_companies.id, housing_companies.NAME, apartment_count, address_id, housing_companies.user_id,
+    JSON_OBJECT('user_id', users.id, 'user_name', users.user_name) AS user,
+    JSON_OBJECT('address_id', addresses.id, 'street', streets.name, 'number', addresses.number) AS address,
+	 JSON_OBJECT('postcode_id', postcodes.id, 'code', postcodes.code, 'name', postcodes.name) AS postcode,
+    JSON_OBJECT('city_id', cities.id, 'name', cities.name) AS city
+    FROM housing_companies
+    JOIN users
+    ON housing_companies.user_id = users.id
+    JOIN addresses
+    ON housing_companies.address_id = addresses.id
+    JOIN streets
+    ON addresses.street_id = streets.id
+    JOIN postcodes
+    ON streets.postcode_id = postcodes.id
+    JOIN cities
+    ON postcodes.city_id = cities.id
+    WHERE cities.id = ?
+    `,
+    [cityID],
+  );
+  if (rows.length === 0) {
+    throw new CustomError('No housing companies found', 404);
+  }
+  const housingCompanies: HousingCompany[] = rows.map((row) => ({
+    ...row,
+    user: JSON.parse(row.user?.toString() || '{}'),
+    postcode: JSON.parse(row.postcode?.toString() || '{}'),
+    city: JSON.parse(row.city?.toString() || '{}'),
+  }));
+  return housingCompanies;
+};
+
+const getHousingCompaniesByStreet = async (streetID: number): Promise<HousingCompany[]> => {
+  const [rows] = await promisePool.execute<GetHousingCompany[]>(
+    `SELECT housing_companies.id, housing_companies.NAME, apartment_count, address_id, housing_companies.user_id,
+    JSON_OBJECT('user_id', users.id, 'user_name', users.user_name) AS user,
+    JSON_OBJECT('address_id', addresses.id, 'street', streets.name, 'number', addresses.number) AS address,
+	 JSON_OBJECT('postcode_id', postcodes.id, 'code', postcodes.code, 'name', postcodes.name) AS postcode,
+    JSON_OBJECT('city_id', cities.id, 'name', cities.name) AS city
+    FROM housing_companies
+    JOIN users
+    ON housing_companies.user_id = users.id
+    JOIN addresses
+    ON housing_companies.address_id = addresses.id
+    JOIN streets
+    ON addresses.street_id = streets.id
+    JOIN postcodes
+    ON streets.postcode_id = postcodes.id
+    JOIN cities
+    ON postcodes.city_id = cities.id
+    WHERE streets.id = ?
+    `,
+    [streetID],
+  );
+  if (rows.length === 0) {
+    throw new CustomError('No housing companies found', 404);
+  }
+  const housingCompanies: HousingCompany[] = rows.map((row) => ({
+    ...row,
+    user: JSON.parse(row.user?.toString() || '{}'),
+    postcode: JSON.parse(row.postcode?.toString() || '{}'),
+    city: JSON.parse(row.city?.toString() || '{}'),
+  }));
+  return housingCompanies;
 };
 
 const postHousingCompany = async (data: PostHousingCompany): Promise<number> => {
@@ -116,4 +258,4 @@ const deleteHousingCompany = async (id: number, user_id: number, role: string): 
   return true;
 };
 
-export { getAllHousingCompanies, getHousingCompany, postHousingCompany, putHousingCompany, deleteHousingCompany };
+export { getAllHousingCompanies, getHousingCompany, getHousingCompaniesByUser, getHousingCompaniesByPostcode, getHousingCompaniesByCity, getHousingCompaniesByStreet, postHousingCompany, putHousingCompany, deleteHousingCompany };
