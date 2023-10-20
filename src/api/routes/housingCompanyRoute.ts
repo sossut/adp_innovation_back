@@ -1,5 +1,5 @@
 import express from 'express';
-import { 
+import {
   housingCompaniesByCityGet,
   housingCompaniesByPostcodeGet,
   housingCompaniesByUserGet,
@@ -9,6 +9,7 @@ import {
   housingCompanyListGet,
   housingCompanyPost,
   housingCompanyPut,
+  housingCompaniesByCurrentUserGet
 } from '../controllers/housingCompanyController';
 import { body, param } from 'express-validator';
 import passport from 'passport';
@@ -17,54 +18,73 @@ const router = express.Router();
 
 router
   .route('/')
-  .get(
-    passport.authenticate('jwt', { session: false }),
-    housingCompanyListGet)
+  .get(passport.authenticate('jwt', { session: false }), housingCompanyListGet)
   .post(
     passport.authenticate('jwt', { session: false }),
     body('name').isString().isLength({ min: 1, max: 255 }).notEmpty().escape(),
     body('address_id').isNumeric().notEmpty().escape(),
-    body('apartment_count').isNumeric().isLength({ min: 1, max: 1000 }).notEmpty().escape(),
-    housingCompanyPost,
+    body('apartment_count')
+      .isNumeric()
+      .isLength({ min: 1, max: 1000 })
+      .notEmpty()
+      .escape(),
+    housingCompanyPost
   );
 
 router
   .route('/:id')
   .get(
     passport.authenticate('jwt', { session: false }),
-    param('id').isNumeric(), housingCompanyGet)
+    param('id').isNumeric(),
+    housingCompanyGet
+  )
   .put(
     passport.authenticate('jwt', { session: false }),
     param('id').isNumeric(),
-    housingCompanyPut,
+    housingCompanyPut
   )
   .delete(
     passport.authenticate('jwt', { session: false }),
     param('id').isNumeric(),
-    housingCompanyDelete,
+    housingCompanyDelete
+  );
+
+router
+  .route('/user/current/')
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    housingCompaniesByCurrentUserGet
   );
 
 router
   .route('/user/:id')
   .get(
     passport.authenticate('jwt', { session: false }),
-    param('id').isNumeric(), housingCompaniesByUserGet);
+    param('id').isNumeric(),
+    housingCompaniesByUserGet
+  );
 
 router
   .route('/postcode/:id')
   .get(
     passport.authenticate('jwt', { session: false }),
-    param('id').isString().notEmpty().escape(), housingCompaniesByPostcodeGet);
+    param('id').isString().notEmpty().escape(),
+    housingCompaniesByPostcodeGet
+  );
 
 router
   .route('/city/:id')
   .get(
     passport.authenticate('jwt', { session: false }),
-    param('id').isString().notEmpty().escape(), housingCompaniesByCityGet);
+    param('id').isString().notEmpty().escape(),
+    housingCompaniesByCityGet
+  );
 
 router
   .route('/street/:id')
   .get(
     passport.authenticate('jwt', { session: false }),
-    param('id').isString().notEmpty().escape(), housingCompaniesByStreetGet);    
+    param('id').isString().notEmpty().escape(),
+    housingCompaniesByStreetGet
+  );
 export default router;

@@ -20,7 +20,7 @@ const getAllResults = async (): Promise<GetResult[]> => {
     JOIN postcodes
     ON streets.postcode_id = postcodes.id
     JOIN cities
-    ON postcoded.city_id = cities.id;`,
+    ON postcoded.city_id = cities.id;`
   );
   if (rows.length === 0) {
     throw new CustomError('No results found', 404);
@@ -47,7 +47,7 @@ const getResult = async (id: string): Promise<GetResult> => {
     JOIN cities
     ON postcoded.city_id = cities.id
     WHERE results.id = ?`,
-    [id],
+    [id]
   );
   if (rows.length === 0) {
     throw new CustomError('Result not found', 404);
@@ -59,7 +59,7 @@ const postResult = async (result: PostResult) => {
   const [headers] = await promisePool.execute<ResultSetHeader>(
     `INSERT INTO results (date_time, filename, survey_id)
     VALUES (?, ?, ?)`,
-    [result.date_time, result.filename, result.survey_id],
+    [result.date_time, result.filename, result.survey_id]
   );
   return headers.insertId;
 };
@@ -67,7 +67,7 @@ const postResult = async (result: PostResult) => {
 const putResult = async (data: PutResult, id: number): Promise<boolean> => {
   const sql = promisePool.format('UPDATE results SET ? WHERE id = ?;', [
     data,
-    id,
+    id
   ]);
 
   const [headers] = await promisePool.query<ResultSetHeader>(sql);
@@ -86,10 +86,4 @@ const deleteResult = async (id: number): Promise<boolean> => {
   return true;
 };
 
-export {
-  getAllResults,
-  getResult,
-  postResult,
-  putResult,
-  deleteResult,
-};
+export { getAllResults, getResult, postResult, putResult, deleteResult };

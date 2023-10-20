@@ -1,5 +1,11 @@
 import { validationResult } from 'express-validator';
-import { postUser, deleteUser, putUser, getAllUsers, getUser } from '../models/userModel';
+import {
+  postUser,
+  deleteUser,
+  putUser,
+  getAllUsers,
+  getUser
+} from '../models/userModel';
 import { Request, Response, NextFunction } from 'express';
 
 import bcrypt from 'bcryptjs';
@@ -10,6 +16,14 @@ const salt = bcrypt.genSaltSync(12);
 
 const userListGet = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const messages = errors
+        .array()
+        .map((error) => `${error.msg}: ${error.param}`)
+        .join(', ');
+      throw new CustomError(messages, 400);
+    }
     const users = await getAllUsers();
     res.json(users);
   } catch (error) {
@@ -17,8 +31,20 @@ const userListGet = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const userGet = async (req: Request<{ id: string }, {}, {}>, res: Response, next: NextFunction) => {
+const userGet = async (
+  req: Request<{ id: string }, {}, {}>,
+  res: Response,
+  next: NextFunction
+) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const messages = errors
+        .array()
+        .map((error) => `${error.msg}: ${error.param}`)
+        .join(', ');
+      throw new CustomError(messages, 400);
+    }
     const user = await getUser(req.params.id);
     res.json(user);
   } catch (error) {
@@ -29,7 +55,7 @@ const userGet = async (req: Request<{ id: string }, {}, {}>, res: Response, next
 const userPost = async (
   req: Request<{}, {}, PostUser>,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const errors = validationResult(req.body);
@@ -47,7 +73,7 @@ const userPost = async (
     if (result) {
       res.json({
         message: 'user added',
-        user_id: result,
+        user_id: result
       });
     } else {
       throw new CustomError('no user inserted', 400);
@@ -60,9 +86,17 @@ const userPost = async (
 const userPut = async (
   req: Request<{ id: number }, {}, User>,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
+    const errors = validationResult(req.body);
+    if (!errors.isEmpty()) {
+      const messages = errors
+        .array()
+        .map((error) => `${error.msg}: ${error.param}`)
+        .join(', ');
+      throw new CustomError(messages, 400);
+    }
     if ((req.user as User).role !== 'admin') {
       throw new CustomError('Unauthorized', 403);
     }
@@ -71,7 +105,7 @@ const userPut = async (
     const result = await putUser(user, req.params.id);
     if (result) {
       res.json({
-        message: 'user updated',
+        message: 'user updated'
       });
     }
   } catch (error) {
@@ -82,7 +116,7 @@ const userPut = async (
 const userPutCurrent = async (
   req: Request<{ id: number }, {}, User>,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const errors = validationResult(req.body);
@@ -98,7 +132,7 @@ const userPutCurrent = async (
     const result = await putUser(user, (req.user as User).id);
     if (result) {
       res.json({
-        message: 'user updated',
+        message: 'user updated'
       });
     }
   } catch (error) {
@@ -109,7 +143,7 @@ const userPutCurrent = async (
 const userDelete = async (
   req: Request<{ id: number }, {}, { user: User }>,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const errors = validationResult(req.body);
@@ -124,7 +158,7 @@ const userDelete = async (
       const result = await deleteUser(req.params.id);
       if (result) {
         res.json({
-          message: 'user deleted',
+          message: 'user deleted'
         });
       }
     }
@@ -136,13 +170,13 @@ const userDelete = async (
 const userDeleteCurrent = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const result = await deleteUser((req.user as User).id);
     if (result) {
       res.json({
-        message: 'user deleted',
+        message: 'user deleted'
       });
     }
   } catch (error) {
@@ -166,5 +200,5 @@ export {
   userPutCurrent,
   userDelete,
   userDeleteCurrent,
-  checkToken,
+  checkToken
 };

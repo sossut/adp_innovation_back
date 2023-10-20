@@ -1,10 +1,19 @@
 import { validationResult } from 'express-validator';
-import { getAnswersBySurvey, postAnswer, deleteAnswer } from '../models/answerModel';
+import {
+  getAnswersBySurvey,
+  postAnswer,
+  deleteAnswer
+} from '../models/answerModel';
 import { Request, Response, NextFunction } from 'express';
 import CustomError from '../../classes/CustomError';
 import { PostAnswer } from '../../interfaces/Answer';
+import { User } from '../../interfaces/User';
 
-const answersBySurveyGet = async (req: Request<{ id: string }, {}, {}>, res: Response, next: NextFunction) => {
+const answersBySurveyGet = async (
+  req: Request<{ id: string }, {}, {}>,
+  res: Response,
+  next: NextFunction
+) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const messages = errors
@@ -22,7 +31,11 @@ const answersBySurveyGet = async (req: Request<{ id: string }, {}, {}>, res: Res
   }
 };
 
-const answerPost = async (req: Request<{}, {}, PostAnswer>, res: Response, next: NextFunction) => {
+const answerPost = async (
+  req: Request<{}, {}, PostAnswer>,
+  res: Response,
+  next: NextFunction
+) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const messages = errors
@@ -39,7 +52,11 @@ const answerPost = async (req: Request<{}, {}, PostAnswer>, res: Response, next:
   }
 };
 
-const answerDelete = async (req: Request<{ id: string }, {}, {}>, res: Response, next: NextFunction) => {
+const answerDelete = async (
+  req: Request<{ id: string }, {}, {}>,
+  res: Response,
+  next: NextFunction
+) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const messages = errors
@@ -47,6 +64,9 @@ const answerDelete = async (req: Request<{ id: string }, {}, {}>, res: Response,
       .map((error) => `${error.msg}: ${error.param}`)
       .join(', ');
     throw new CustomError(messages, 400);
+  }
+  if ((req.user as User).role !== 'admin') {
+    throw new CustomError('Unauthorized', 401);
   }
   const id = parseInt(req.params.id);
   try {
