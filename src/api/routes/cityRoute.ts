@@ -1,52 +1,41 @@
 import express from 'express';
-import {
-  surveyDelete,
-  surveyGet,
-  surveyGetByKey,
-  surveyListGet,
-  surveyPost,
-  surveyPut,
-  surveyListByHousingCompanyGet
-} from '../controllers/surveyController';
 import { body, param } from 'express-validator';
 import passport from 'passport';
+import {
+  cityListGet,
+  cityGet,
+  cityPost,
+  cityPut,
+  cityDelete
+} from '../controllers/cityController';
 
 const router = express.Router();
 
 router
   .route('/')
-  .get(surveyListGet)
+  .get(passport.authenticate('jwt', { session: false }), cityListGet)
   .post(
     passport.authenticate('jwt', { session: false }),
     body('name').isString().isLength({ min: 1, max: 255 }).notEmpty().escape(),
-    body('housing_company_id').isNumeric().notEmpty().escape(),
-    surveyPost
+    cityPost
   );
 
 router
   .route('/:id')
-  .get(param('id').isNumeric(), surveyGet)
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    param('id').isNumeric(),
+    cityGet
+  )
   .put(
     passport.authenticate('jwt', { session: false }),
     param('id').isNumeric(),
-    surveyPut
+    cityPut
   )
   .delete(
     passport.authenticate('jwt', { session: false }),
     param('id').isNumeric(),
-    surveyDelete
-  );
-
-router
-  .route('/key/:key')
-  .get(param('key').isString().notEmpty().escape(), surveyGetByKey);
-
-router
-  .route('/housing-company/:id')
-  .get(
-    passport.authenticate('jwt', { session: false }),
-    param('id').isNumeric(),
-    surveyListByHousingCompanyGet
+    cityDelete
   );
 
 export default router;

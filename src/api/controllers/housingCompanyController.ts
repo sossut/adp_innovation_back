@@ -32,13 +32,11 @@ const housingCompanyListGet = async (
       .join(', ');
     throw new CustomError(messages, 400);
   }
-  if ((req.user as User).role !== 'admin') {
-    throw new CustomError('Unauthorized', 401);
-  }
   try {
-    const housingCompanies = await getAllHousingCompanies(
-      (req.user as User).role
-    );
+    if ((req.user as User).role !== 'admin') {
+      throw new CustomError('Unauthorized', 401);
+    }
+    const housingCompanies = await getAllHousingCompanies();
 
     res.json(housingCompanies);
   } catch (error) {
@@ -87,11 +85,11 @@ const housingCompaniesByUserGet = async (
       .join(', ');
     throw new CustomError(messages, 400);
   }
-  if ((req.user as User).role !== 'admin') {
-    throw new CustomError('Unauthorized', 401);
-  }
   const id = parseInt(req.params.id);
   try {
+    if ((req.user as User).role !== 'admin') {
+      throw new CustomError('Unauthorized', 401);
+    }
     const housingCompanies = await getHousingCompaniesByUser(id);
     res.json(housingCompanies);
   } catch (error) {
@@ -136,11 +134,11 @@ const housingCompaniesByPostcodeGet = async (
       .join(', ');
     throw new CustomError(messages, 400);
   }
-  if ((req.user as User).role !== 'admin') {
-    throw new CustomError('Unauthorized', 401);
-  }
   const postcodeID = parseInt(req.params.id);
   try {
+    if ((req.user as User).role !== 'admin') {
+      throw new CustomError('Unauthorized', 401);
+    }
     const housingCompanies = await getHousingCompaniesByPostcode(postcodeID);
     res.json(housingCompanies);
   } catch (error) {
@@ -189,11 +187,11 @@ const housingCompaniesByStreetGet = async (
       .join(', ');
     throw new CustomError(messages, 400);
   }
-  if ((req.user as User).role !== 'admin') {
-    throw new CustomError('Unauthorized', 401);
-  }
   const street = parseInt(req.params.id);
   try {
+    if ((req.user as User).role !== 'admin') {
+      throw new CustomError('Unauthorized', 401);
+    }
     const housingCompanies = await getHousingCompaniesByStreet(street);
     res.json(housingCompanies);
   } catch (error) {

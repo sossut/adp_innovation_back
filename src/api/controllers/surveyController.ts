@@ -1,15 +1,34 @@
 import { validationResult } from 'express-validator';
 
-import { getAllSurveys, getSurvey, postSurvey, putSurvey, deleteSurvey, getSurveyByKey } from '../models/surveyModel';
+import {
+  getAllSurveys,
+  getSurvey,
+  postSurvey,
+  putSurvey,
+  deleteSurvey,
+  getSurveyByKey,
+  getSurveysByHousingCompany
+} from '../models/surveyModel';
 import { Request, Response, NextFunction } from 'express';
 import CustomError from '../../classes/CustomError';
 import { Survey, PostSurvey } from '../../interfaces/Survey';
 import { User } from '../../interfaces/User';
 import MessageResponse from '../../interfaces/MessageResponse';
 
-
-const surveyListGet = async (req: Request, res: Response, next: NextFunction) => {
+const surveyListGet = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const messages = errors
+        .array()
+        .map((error) => `${error.msg}: ${error.param}`)
+        .join(', ');
+      throw new CustomError(messages, 400);
+    }
     const surveys = await getAllSurveys();
     res.json(surveys);
   } catch (error) {
@@ -34,10 +53,44 @@ const surveyGet = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const surveyGetByKey = async (req: Request<{ key: string }, {}, {}>, res: Response, next: NextFunction) => {
+const surveyGetByKey = async (
+  req: Request<{ key: string }, {}, {}>,
+  res: Response,
+  next: NextFunction
+) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const messages = errors
+        .array()
+        .map((error) => `${error.msg}: ${error.param}`)
+        .join(', ');
+      throw new CustomError(messages, 400);
+    }
     const survey = await getSurveyByKey(req.params.key);
     res.json(survey);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const surveyListByHousingCompanyGet = async (
+  req: Request<{ id: string }, {}, {}>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const messages = errors
+        .array()
+        .map((error) => `${error.msg}: ${error.param}`)
+        .join(', ');
+      throw new CustomError(messages, 400);
+    }
+    const housingCompanyId = parseInt(req.params.id);
+    const surveys = await getSurveysByHousingCompany(housingCompanyId);
+    res.json(surveys);
   } catch (error) {
     next(error);
   }
@@ -46,7 +99,7 @@ const surveyGetByKey = async (req: Request<{ key: string }, {}, {}>, res: Respon
 const surveyPost = async (
   req: Request<{}, {}, PostSurvey>,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const errors = validationResult(req.body);
@@ -63,7 +116,7 @@ const surveyPost = async (
     if (result) {
       const message: MessageResponse = {
         message: 'survey added',
-        id: result,
+        id: result
       };
       res.json(message);
     }
@@ -75,7 +128,7 @@ const surveyPost = async (
 const surveyPut = async (
   req: Request<{ id: string }, {}, Survey>,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const errors = validationResult(req);
@@ -92,7 +145,7 @@ const surveyPut = async (
     if (result) {
       res.json({
         message: 'survey updated',
-        id: result,
+        id: result
       });
     }
   } catch (error) {
@@ -100,7 +153,11 @@ const surveyPut = async (
   }
 };
 
-const surveyDelete = async (req: Request<{ id: string }>, res: Response, next: NextFunction) => {
+const surveyDelete = async (
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -114,7 +171,7 @@ const surveyDelete = async (req: Request<{ id: string }>, res: Response, next: N
     if (result) {
       const message: MessageResponse = {
         message: 'survey deleted',
-        id: parseInt(req.params.id),
+        id: parseInt(req.params.id)
       };
       res.json(message);
     }
@@ -123,4 +180,12 @@ const surveyDelete = async (req: Request<{ id: string }>, res: Response, next: N
   }
 };
 
-export { surveyListGet, surveyGet, surveyPost, surveyPut, surveyDelete, surveyGetByKey };
+export {
+  surveyListGet,
+  surveyGet,
+  surveyPost,
+  surveyPut,
+  surveyDelete,
+  surveyGetByKey,
+  surveyListByHousingCompanyGet
+};

@@ -8,12 +8,7 @@ import {
   PutHousingCompany
 } from '../../interfaces/HousingCompany';
 
-const getAllHousingCompanies = async (
-  role: string
-): Promise<HousingCompany[]> => {
-  if (role !== 'admin') {
-    throw new CustomError('Not authorized', 401);
-  }
+const getAllHousingCompanies = async (): Promise<HousingCompany[]> => {
   const [rows] = await promisePool.execute<GetHousingCompany[]>(
     `SELECT housing_companies.id, housing_companies.NAME, apartment_count, address_id, housing_companies.user_id,
     JSON_OBJECT('user_id', users.id, 'user_name', users.user_name) AS user,
@@ -40,7 +35,8 @@ const getAllHousingCompanies = async (
     ...row,
     user: JSON.parse(row.user?.toString() || '{}'),
     postcode: JSON.parse(row.postcode?.toString() || '{}'),
-    city: JSON.parse(row.city?.toString() || '{}')
+    city: JSON.parse(row.city?.toString() || '{}'),
+    address: JSON.parse(row.address?.toString() || '{}')
   }));
   return housingCompanies;
 };
@@ -113,7 +109,8 @@ const getHousingCompaniesByUser = async (
     ...row,
     user: JSON.parse(row.user?.toString() || '{}'),
     postcode: JSON.parse(row.postcode?.toString() || '{}'),
-    city: JSON.parse(row.city?.toString() || '{}')
+    city: JSON.parse(row.city?.toString() || '{}'),
+    address: JSON.parse(row.address?.toString() || '{}')
   }));
   return housingCompanies;
 };
@@ -149,7 +146,8 @@ const getHousingCompaniesByCurrentUser = async (
     ...row,
     user: JSON.parse(row.user?.toString() || '{}'),
     postcode: JSON.parse(row.postcode?.toString() || '{}'),
-    city: JSON.parse(row.city?.toString() || '{}')
+    city: JSON.parse(row.city?.toString() || '{}'),
+    address: JSON.parse(row.address?.toString() || '{}')
   }));
   return housingCompanies;
 };
@@ -187,7 +185,8 @@ const getHousingCompaniesByPostcode = async (
     ...row,
     user: JSON.parse(row.user?.toString() || '{}'),
     postcode: JSON.parse(row.postcode?.toString() || '{}'),
-    city: JSON.parse(row.city?.toString() || '{}')
+    city: JSON.parse(row.city?.toString() || '{}'),
+    address: JSON.parse(row.address?.toString() || '{}')
   }));
   return housingCompanies;
 };
@@ -223,7 +222,8 @@ const getHousingCompaniesByCity = async (
     ...row,
     user: JSON.parse(row.user?.toString() || '{}'),
     postcode: JSON.parse(row.postcode?.toString() || '{}'),
-    city: JSON.parse(row.city?.toString() || '{}')
+    city: JSON.parse(row.city?.toString() || '{}'),
+    address: JSON.parse(row.address?.toString() || '{}')
   }));
   return housingCompanies;
 };
