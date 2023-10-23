@@ -2,6 +2,7 @@ import express from 'express';
 import userRoute from './routes/userRoute';
 import cityRoute from './routes/cityRoute';
 import postcodeRoute from './routes/postcodeRoute';
+import streetRoute from './routes/streetRoute';
 import housingCompanyRoute from './routes/housingCompanyRoute';
 import authRoute from './routes/authRoute';
 import questionRoute from './routes/questionRoute';
@@ -24,6 +25,7 @@ router.get<{}, MessageResponse>('/', (req, res) => {
 router.use('/auth', authRoute);
 router.use('/city', cityRoute);
 router.use('/postcode', postcodeRoute);
+router.use('/street', streetRoute);
 router.use('/user', userRoute);
 router.use('/housing-company', housingCompanyRoute);
 router.use('/question', questionRoute);
