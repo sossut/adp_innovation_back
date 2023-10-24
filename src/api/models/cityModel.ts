@@ -23,7 +23,6 @@ const getCity = async (id: string): Promise<GetCity> => {
 };
 
 const getCityIdByName = async (name: string): Promise<number> => {
-  console.log(name);
   const [rows] = await promisePool.execute<GetCity[]>(
     'SELECT * FROM cities WHERE name = ?',
     [name]
@@ -58,7 +57,6 @@ const putCity = async (data: PutCity, id: number) => {
 };
 
 const deleteCity = async (id: number) => {
-  console.log(id);
   const [headers] = await promisePool.execute<ResultSetHeader>(
     'DELETE FROM cities WHERE id = ?;',
     [id]

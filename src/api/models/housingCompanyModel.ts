@@ -4,7 +4,6 @@ import { ResultSetHeader } from 'mysql2';
 import {
   GetHousingCompany,
   HousingCompany,
-  PostHousingCompany,
   PutHousingCompany
 } from '../../interfaces/HousingCompany';
 
@@ -156,7 +155,6 @@ const getHousingCompaniesByCurrentUser = async (
 const getHousingCompaniesByPostcode = async (
   postcodeID: number
 ): Promise<HousingCompany[]> => {
-  console.log(postcodeID);
   const [rows] = await promisePool.execute<GetHousingCompany[]>(
     `SELECT housing_companies.id, housing_companies.NAME, apartment_count, address_id, housing_companies.user_id,
     JSON_OBJECT('user_id', users.id, 'user_name', users.user_name) AS user,
@@ -265,8 +263,6 @@ const getHousingCompaniesByStreet = async (
 };
 
 const postHousingCompany = async (data: any): Promise<number> => {
-  console.log(data);
-  console.log(data.apartment_count);
   const [headers] = await promisePool.execute<ResultSetHeader>(
     `INSERT INTO housing_companies (name, apartment_count, address_id, user_id)
     VALUES (?, ?, ?, ?)`,
@@ -284,8 +280,6 @@ const putHousingCompany = async (
   userID: number,
   role: string
 ): Promise<boolean> => {
-  console.log(housingCompany);
-
   let sql = 'UPDATE housing_companies SET ? WHERE id = ? AND user_id = ?';
   let params = [housingCompany, id, userID];
   if (role === 'admin') {

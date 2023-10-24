@@ -55,7 +55,6 @@ const getPostcodeIdByCode = async (code: string): Promise<number> => {
 };
 
 const postPostcode = async (postcode: PostPostcode) => {
-  console.log(postcode);
   const [headers] = await promisePool.execute<ResultSetHeader>(
     'INSERT INTO postcodes (code, name, city_id) VALUES (?, ?, ?);',
     [postcode.code, postcode.name, postcode.city_id]

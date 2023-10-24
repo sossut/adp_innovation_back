@@ -11,10 +11,7 @@ import {
   getHousingCompaniesByStreet
 } from '../models/housingCompanyModel';
 import { Request, Response, NextFunction } from 'express';
-import {
-  HousingCompany,
-  PostHousingCompany
-} from '../../interfaces/HousingCompany';
+import { HousingCompany } from '../../interfaces/HousingCompany';
 import CustomError from '../../classes/CustomError';
 import MessageResponse from '../../interfaces/MessageResponse';
 import { User } from '../../interfaces/User';
@@ -80,7 +77,6 @@ const housingCompaniesByUserGet = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log(req.params.id);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const messages = errors
@@ -106,7 +102,6 @@ const housingCompaniesByCurrentUserGet = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log(req.params.id);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const messages = errors
@@ -129,7 +124,6 @@ const housingCompaniesByPostcodeGet = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log(req.params.id);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const messages = errors
@@ -156,7 +150,6 @@ const housingCompaniesByCityGet = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log(req.params.id);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const messages = errors
@@ -182,7 +175,6 @@ const housingCompaniesByStreetGet = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log(req.params.id);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const messages = errors
@@ -254,20 +246,18 @@ const housingCompanyPost = async (
         city_id: city
       });
     }
-    console.log(postcode);
+
     let street;
     try {
       street = await getStreetIdByName(req.body.street_name);
-      console.log(1, street);
     } catch (error) {}
     if (!street) {
       street = await postStreet({
         name: req.body.street_name,
         postcode_id: postcode
       });
-      console.log(2, street);
     }
-    console.log(street);
+
     const address = await postAddress({
       number: req.body.address_number,
       street_id: street

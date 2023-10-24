@@ -4,13 +4,9 @@ import { Strategy as JWTStrategy, ExtractJwt } from 'passport-jwt';
 import bcrypt from 'bcryptjs';
 import { getUserLogin } from '../api/models/userModel';
 
-
-
-
 passport.use(
   new Strategy(async (username, password, done) => {
     try {
-      console.log(username, password);
       const user = await getUserLogin(username);
       if (!user) {
         return done(null, false);
@@ -22,23 +18,22 @@ passport.use(
     } catch (err) {
       return done(err);
     }
-  }),
+  })
 );
-  
+
 // TODO: JWT strategy for handling bearer token
 // consider .env for secret, e.g. secretOrKey: process.env.JWT_SECRET
 passport.use(
   new JWTStrategy(
     {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.JWT_SECRET,
+      secretOrKey: process.env.JWT_SECRET
     },
     (jwtPayload, done) => {
       // console.log('payload', jwtPayload);
       done(null, jwtPayload);
-    },
-  ),
+    }
+  )
 );
 
 export default passport;
-      

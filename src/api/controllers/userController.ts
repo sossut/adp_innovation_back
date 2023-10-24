@@ -68,7 +68,7 @@ const userPost = async (
     }
     const { password } = req.body;
     req.body.password = bcrypt.hashSync(password, salt);
-    console.log(req.body);
+
     const result = await postUser(req.body);
     if (result) {
       res.json({
@@ -128,7 +128,7 @@ const userPutCurrent = async (
       throw new CustomError(messages, 400);
     }
     const user = req.body;
-    console.log(req.user);
+
     const result = await putUser(user, (req.user as User).id);
     if (result) {
       res.json({

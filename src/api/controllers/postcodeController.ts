@@ -68,7 +68,7 @@ const postcodePost = async (
         .join(', ');
       throw new CustomError(messages, 400);
     }
-    console.log(req.body);
+
     const postcode = await postPostcode(req.body);
     res.json(postcode);
   } catch (error) {
