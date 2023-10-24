@@ -18,6 +18,10 @@ import {
 import CustomError from '../../classes/CustomError';
 import MessageResponse from '../../interfaces/MessageResponse';
 import { User } from '../../interfaces/User';
+import { postAddress } from '../models/addressModel';
+import { getCityIdByName, postCity } from '../models/cityModel';
+import { getPostcodeIdByCode, postPostcode } from '../models/postcodeModel';
+import { getStreetIdByName, postStreet } from '../models/streetModel';
 
 const housingCompanyListGet = async (
   req: Request,
@@ -200,7 +204,20 @@ const housingCompaniesByStreetGet = async (
 };
 
 const housingCompanyPost = async (
-  req: Request<{}, {}, PostHousingCompany>,
+  req: Request<
+    {},
+    {},
+    {
+      name: string;
+      apartment_count: number;
+      user_id: number;
+      address_number: string;
+      street_name: string;
+      postcode_name: string;
+      postcode: string;
+      city_name: string;
+    }
+  >,
   res: Response,
   next: NextFunction
 ) => {
@@ -216,7 +233,51 @@ const housingCompanyPost = async (
   try {
     const user = req.user as User;
     req.body.user_id = user.id;
-    const result = await postHousingCompany(req.body);
+
+    let city;
+    try {
+      city = await getCityIdByName(req.body.city_name);
+    } catch (error) {}
+
+    if (!city) {
+      city = await postCity({ name: req.body.city_name });
+    }
+
+    let postcode;
+    try {
+      postcode = await getPostcodeIdByCode(req.body.postcode);
+    } catch (error) {}
+    if (!postcode) {
+      postcode = await postPostcode({
+        name: req.body.postcode_name,
+        code: req.body.postcode,
+        city_id: city
+      });
+    }
+    console.log(postcode);
+    let street;
+    try {
+      street = await getStreetIdByName(req.body.street_name);
+      console.log(1, street);
+    } catch (error) {}
+    if (!street) {
+      street = await postStreet({
+        name: req.body.street_name,
+        postcode_id: postcode
+      });
+      console.log(2, street);
+    }
+    console.log(street);
+    const address = await postAddress({
+      number: req.body.address_number,
+      street_id: street
+    });
+    const result = await postHousingCompany({
+      name: req.body.name,
+      apartment_count: req.body.apartment_count,
+      address_id: address,
+      user_id: user.id
+    });
     if (result) {
       const message: MessageResponse = {
         message: 'housing company added',

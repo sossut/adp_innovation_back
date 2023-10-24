@@ -11,7 +11,7 @@ interface Survey {
   survey_status: 'ongoing' | 'closed';
   user_id: User | number;
   survey_key: string;
-  housing_company_id: HousingCompany;
+  housing_company_id: HousingCompany | number;
 }
 
 interface GetSurvey extends RowDataPacket, Survey {}

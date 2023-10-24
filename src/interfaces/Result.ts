@@ -6,7 +6,7 @@ interface Result {
   id: number;
   filename: string;
   date_time: Date;
-  survey_id: Survey;
+  survey_id: Survey | number;
 }
 
 interface GetResult extends RowDataPacket, Result {}

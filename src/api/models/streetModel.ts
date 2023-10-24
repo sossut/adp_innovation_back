@@ -49,9 +49,21 @@ const getStreet = async (id: string): Promise<GetStreet> => {
   return rows[0];
 };
 
+const getStreetIdByName = async (name: string): Promise<number> => {
+  const [rows] = await promisePool.execute<GetStreet[]>(
+    `SELECT * FROM streets
+    WHERE streets.name = ?;`,
+    [name]
+  );
+  if (rows.length === 0) {
+    throw new CustomError('No streets found', 404);
+  }
+  return rows[0].id;
+};
+
 const postStreet = async (street: PostStreet) => {
   const [headers] = await promisePool.execute<ResultSetHeader>(
-    'INSERT INTO streets (name, city_id) VALUES (?, ?);',
+    'INSERT INTO streets (name, postcode_id) VALUES (?, ?);',
     [street.name, street.postcode_id]
   );
   if (headers.affectedRows === 0) {
@@ -83,4 +95,11 @@ const deleteStreet = async (id: number) => {
   return headers.affectedRows;
 };
 
-export { getAllStreets, getStreet, postStreet, putStreet, deleteStreet };
+export {
+  getAllStreets,
+  getStreet,
+  getStreetIdByName,
+  postStreet,
+  putStreet,
+  deleteStreet
+};

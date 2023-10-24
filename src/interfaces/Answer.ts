@@ -5,7 +5,7 @@ import { Survey } from './Survey';
 interface Answer {
   id: number;
   answer: number;
-  question_id: Question;
+  question_id: Question | number;
   survey_id: Survey;
 }
 

@@ -6,6 +6,7 @@ import { User } from './User';
 interface HousingCompany {
   id: number;
   name: string;
+  apartment_count: number;
   address_id: Address;
   user_id: number | User;
 }
@@ -16,4 +17,9 @@ type PostHousingCompany = Omit<HousingCompany, 'id'>;
 
 type PutHousingCompany = Partial<PostHousingCompany>;
 
-export { HousingCompany, GetHousingCompany, PostHousingCompany, PutHousingCompany };
+export {
+  HousingCompany,
+  GetHousingCompany,
+  PostHousingCompany,
+  PutHousingCompany
+};

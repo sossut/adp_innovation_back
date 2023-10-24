@@ -42,6 +42,18 @@ const getPostcode = async (id: string): Promise<GetPostcode> => {
   return rows[0];
 };
 
+const getPostcodeIdByCode = async (code: string): Promise<number> => {
+  const [rows] = await promisePool.execute<GetPostcode[]>(
+    `SELECT * FROM postcodes
+    WHERE postcodes.code = ?`,
+    [code]
+  );
+  if (rows.length === 0) {
+    throw new CustomError('No postcodes found', 404);
+  }
+  return rows[0].id;
+};
+
 const postPostcode = async (postcode: PostPostcode) => {
   console.log(postcode);
   const [headers] = await promisePool.execute<ResultSetHeader>(
@@ -80,6 +92,7 @@ const deletePostcode = async (id: number) => {
 export {
   getAllPostcodes,
   getPostcode,
+  getPostcodeIdByCode,
   postPostcode,
   putPostcode,
   deletePostcode

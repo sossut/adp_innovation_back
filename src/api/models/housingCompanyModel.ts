@@ -264,13 +264,13 @@ const getHousingCompaniesByStreet = async (
   return housingCompanies;
 };
 
-const postHousingCompany = async (
-  data: PostHousingCompany
-): Promise<number> => {
+const postHousingCompany = async (data: any): Promise<number> => {
+  console.log(data);
+  console.log(data.apartment_count);
   const [headers] = await promisePool.execute<ResultSetHeader>(
-    `INSERT INTO housing_companies (name, address_id, user_id)
-    VALUES (?, ?, ?)`,
-    [data.name, data.address_id, data.user_id]
+    `INSERT INTO housing_companies (name, apartment_count, address_id, user_id)
+    VALUES (?, ?, ?, ?)`,
+    [data.name, data.apartment_count, data.address_id, data.user_id]
   );
   if (headers.affectedRows === 0) {
     throw new CustomError('No housing companies added', 404);
@@ -314,7 +314,7 @@ const deleteHousingCompany = async (
   const [headers] = await promisePool.execute<ResultSetHeader>(sql, params);
 
   if (headers.affectedRows === 0) {
-    throw new CustomError('Housing company not found', 404);
+    throw new CustomError('No housing companies deleted', 400);
   }
   return true;
 };

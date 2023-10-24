@@ -22,6 +22,18 @@ const getCity = async (id: string): Promise<GetCity> => {
   return rows[0];
 };
 
+const getCityIdByName = async (name: string): Promise<number> => {
+  console.log(name);
+  const [rows] = await promisePool.execute<GetCity[]>(
+    'SELECT * FROM cities WHERE name = ?',
+    [name]
+  );
+  if (rows.length === 0) {
+    throw new CustomError('No cities found', 404);
+  }
+  return rows[0].id;
+};
+
 const postCity = async (city: PostCity) => {
   const [headers] = await promisePool.execute<ResultSetHeader>(
     'INSERT INTO cities (name) VALUES (?);',
@@ -57,4 +69,11 @@ const deleteCity = async (id: number) => {
   return headers.affectedRows;
 };
 
-export { getAllCities, getCity, postCity, putCity, deleteCity };
+export {
+  getAllCities,
+  getCity,
+  getCityIdByName,
+  postCity,
+  putCity,
+  deleteCity
+};

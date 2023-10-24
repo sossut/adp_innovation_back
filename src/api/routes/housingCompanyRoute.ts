@@ -22,11 +22,35 @@ router
   .post(
     passport.authenticate('jwt', { session: false }),
     body('name').isString().isLength({ min: 1, max: 255 }).notEmpty().escape(),
-    body('address_id').isNumeric().notEmpty().escape(),
     body('apartment_count')
       .isNumeric()
       .isLength({ min: 1, max: 1000 })
       .notEmpty()
+      .escape(),
+    body('address_number')
+      .isNumeric()
+      .isLength({ min: 1, max: 1000 })
+      .escape()
+      .optional(),
+    body('street_name')
+      .isString()
+      .isLength({ min: 1, max: 255 })
+      .optional()
+      .escape(),
+    body('postcode')
+      .isString()
+      .isLength({ min: 1, max: 255 })
+      .optional()
+      .escape(),
+    body('postcode_name')
+      .isString()
+      .isLength({ min: 1, max: 255 })
+      .optional()
+      .escape(),
+    body('city_name')
+      .isString()
+      .isLength({ min: 1, max: 255 })
+      .optional()
       .escape(),
     housingCompanyPost
   );

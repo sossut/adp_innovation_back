@@ -3,8 +3,8 @@ import { City } from './City';
 
 interface Postcode {
   id: number;
-  code: number;
-  city_id: City;
+  code: string;
+  city_id: City | number;
   name: string;
 }
 
