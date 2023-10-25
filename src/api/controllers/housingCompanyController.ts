@@ -18,7 +18,10 @@ import { User } from '../../interfaces/User';
 import { postAddress } from '../models/addressModel';
 import { getCityIdByName, postCity } from '../models/cityModel';
 import { getPostcodeIdByCode, postPostcode } from '../models/postcodeModel';
-import { getStreetIdByName, postStreet } from '../models/streetModel';
+import {
+  getStreetIdByNameAndPostcodeID,
+  postStreet
+} from '../models/streetModel';
 
 const housingCompanyListGet = async (
   req: Request,
@@ -249,7 +252,10 @@ const housingCompanyPost = async (
 
     let street;
     try {
-      street = await getStreetIdByName(req.body.street_name);
+      street = await getStreetIdByNameAndPostcodeID(
+        req.body.street_name,
+        postcode
+      );
     } catch (error) {}
     if (!street) {
       street = await postStreet({

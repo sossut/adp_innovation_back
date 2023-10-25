@@ -5,7 +5,7 @@ import { GetAnswer, PostAnswer, PutAnswer } from '../../interfaces/Answer';
 
 const getAllAnswers = async (): Promise<GetAnswer[]> => {
   const [rows] = await promisePool.execute<GetAnswer[]>(
-    'SELECT * FROM answers;',
+    'SELECT * FROM answers;'
   );
   if (rows.length === 0) {
     throw new CustomError('No answers found', 404);
@@ -15,7 +15,8 @@ const getAllAnswers = async (): Promise<GetAnswer[]> => {
 
 const getAnswer = async (id: string): Promise<GetAnswer> => {
   const [rows] = await promisePool.execute<GetAnswer[]>(
-    'SELECT * FROM answers WHERE id = ?', [id],
+    'SELECT * FROM answers WHERE id = ?',
+    [id]
   );
   if (rows.length === 0) {
     throw new CustomError('No answers found', 404);
@@ -29,7 +30,8 @@ const getAnswersBySurvey = async (surveyID: number): Promise<GetAnswer[]> => {
 	 FROM answers
     JOIN questions
     ON answers.question_id = questions.id
-    WHERE survey_id = ?`, [surveyID],
+    WHERE survey_id = ?`,
+    [surveyID]
   );
   if (rows.length === 0) {
     throw new CustomError('No answers found', 404);
@@ -40,7 +42,7 @@ const getAnswersBySurvey = async (surveyID: number): Promise<GetAnswer[]> => {
 const postAnswer = async (answer: PostAnswer) => {
   const [headers] = await promisePool.execute<ResultSetHeader>(
     'INSERT INTO answers (answer, question_id, survey_id) VALUES (?, ?, ?);',
-    [answer.answer, answer.question_id, answer.survey_id],
+    [answer.answer, answer.question_id, answer.survey_id]
   );
   if (headers.affectedRows === 0) {
     throw new CustomError('Answer not created', 400);
@@ -51,26 +53,24 @@ const postAnswer = async (answer: PostAnswer) => {
 const putAnswer = async (data: PutAnswer, id: number) => {
   const sql = promisePool.format('UPDATE answers SET ? WHERE id = ?;', [
     data,
-    id,
+    id
   ]);
-  const [headers] = await promisePool.execute<ResultSetHeader>(
-    sql,
-  );
+  const [headers] = await promisePool.execute<ResultSetHeader>(sql);
   if (headers.affectedRows === 0) {
     throw new CustomError('Answer not updated', 400);
   }
   return headers.affectedRows;
 };
 
-const deleteAnswer = async (id: number) => {
+const deleteAnswer = async (id: number): Promise<boolean> => {
   const [headers] = await promisePool.execute<ResultSetHeader>(
     'DELETE FROM answers WHERE id = ?;',
-    [id],
+    [id]
   );
   if (headers.affectedRows === 0) {
     throw new CustomError('Answer not deleted', 400);
   }
-  return headers.affectedRows;
+  return true;
 };
 
 export {
@@ -79,5 +79,5 @@ export {
   getAnswersBySurvey,
   postAnswer,
   putAnswer,
-  deleteAnswer,
+  deleteAnswer
 };

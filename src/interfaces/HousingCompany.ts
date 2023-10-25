@@ -7,7 +7,7 @@ interface HousingCompany {
   id: number;
   name: string;
   apartment_count: number;
-  address_id: Address;
+  address_id: number | Address;
   user_id: number | User;
 }
 

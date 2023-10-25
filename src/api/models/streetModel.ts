@@ -49,11 +49,14 @@ const getStreet = async (id: string): Promise<GetStreet> => {
   return rows[0];
 };
 
-const getStreetIdByName = async (name: string): Promise<number> => {
+const getStreetIdByNameAndPostcodeID = async (
+  name: string,
+  postcode_id: number
+): Promise<number> => {
   const [rows] = await promisePool.execute<GetStreet[]>(
     `SELECT * FROM streets
-    WHERE streets.name = ?;`,
-    [name]
+    WHERE streets.name = ? AND postcode_id = ?;`,
+    [name, postcode_id]
   );
   if (rows.length === 0) {
     throw new CustomError('No streets found', 404);
@@ -98,7 +101,7 @@ const deleteStreet = async (id: number) => {
 export {
   getAllStreets,
   getStreet,
-  getStreetIdByName,
+  getStreetIdByNameAndPostcodeID,
   postStreet,
   putStreet,
   deleteStreet
