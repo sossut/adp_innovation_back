@@ -89,7 +89,13 @@ const surveyListByHousingCompanyGet = async (
       throw new CustomError(messages, 400);
     }
     const housingCompanyId = parseInt(req.params.id);
-    const surveys = await getSurveysByHousingCompany(housingCompanyId);
+    const userID = (req.user as User).id;
+    const role = (req.user as User).role;
+    const surveys = await getSurveysByHousingCompany(
+      housingCompanyId,
+      userID,
+      role
+    );
     res.json(surveys);
   } catch (error) {
     next(error);
@@ -112,6 +118,21 @@ const surveyPost = async (
     }
     const user = req.user as User;
     req.body.user_id = user.id;
+    if (!req.body.end_date) {
+      req.body.end_date = null;
+    }
+    if (!req.body.max_responses) {
+      req.body.max_responses = null;
+    }
+    if (!req.body.min_responses) {
+      req.body.min_responses = null;
+    }
+    if (!req.body.start_date) {
+      req.body.start_date = null;
+    }
+    if (!req.body.survey_status) {
+      req.body.survey_status = 'open';
+    }
     const result = await postSurvey(req.body);
     if (result) {
       const message: MessageResponse = {
@@ -141,7 +162,9 @@ const surveyPut = async (
     }
     const survey = req.body;
     const id = parseInt(req.params.id);
-    const result = await putSurvey(survey, id);
+    const userID = (req.user as User).id;
+    const role = (req.user as User).role;
+    const result = await putSurvey(survey, id, userID, role);
     if (result) {
       res.json({
         message: 'survey updated',
@@ -167,7 +190,9 @@ const surveyDelete = async (
         .join(', ');
       throw new CustomError(messages, 400);
     }
-    const result = await deleteSurvey(parseInt(req.params.id));
+    const userID = (req.user as User).id;
+    const role = (req.user as User).role;
+    const result = await deleteSurvey(parseInt(req.params.id), userID, role);
     if (result) {
       const message: MessageResponse = {
         message: 'survey deleted',

@@ -61,27 +61,67 @@ const postSurvey = async (survey: PostSurvey) => {
       survey.housing_company_id
     ]
   );
+  if (headers.affectedRows === 0) {
+    throw new CustomError('Survey not created', 400);
+  }
   return headers.insertId;
 };
 
-const putSurvey = async (data: PutSurvey, id: number): Promise<boolean> => {
-  const sql = promisePool.format('UPDATE surveys SET ? WHERE id = ?;', [
-    data,
-    id
-  ]);
+const putSurvey = async (
+  data: PutSurvey,
+  id: number,
+  userID: number,
+  role: string
+): Promise<boolean> => {
+  let sql = 'UPDATE surveys SET ? WHERE id = ? AND user_id = ?;';
+  let params = [data, id, userID];
+  if (role === 'admin') {
+    sql = 'UPDATE surveys SET ? WHERE id = ?;';
+    params = [data, id];
+  }
+  const format = promisePool.format(sql, params);
 
-  const [headers] = await promisePool.query<ResultSetHeader>(sql);
+  const [headers] = await promisePool.query<ResultSetHeader>(format);
   if (headers.affectedRows === 0) {
-    throw new CustomError('Survey not found', 404);
+    throw new CustomError('Survey not updated', 404);
   }
   return true;
 };
 
-const deleteSurvey = async (id: number): Promise<boolean> => {
-  const sql = promisePool.format('DELETE FROM surveys WHERE id = ?;', [id]);
-  const [headers] = await promisePool.query<ResultSetHeader>(sql);
+const deleteSurvey = async (
+  id: number,
+  userID: number,
+  role: string
+): Promise<boolean> => {
+  let sql = 'DELETE FROM surveys WHERE id = ? AND user_id = ?;';
+  let params = [id, userID];
+  if (role === 'admin') {
+    sql = 'DELETE FROM surveys WHERE id = ?;';
+    params = [id];
+  }
+  const format = promisePool.format(sql, params);
+  const [headers] = await promisePool.query<ResultSetHeader>(format);
   if (headers.affectedRows === 0) {
-    throw new CustomError('Survey not found', 404);
+    throw new CustomError('Survey not deleted', 404);
+  }
+  return true;
+};
+
+const deleteAllSurveysFromHousingCompany = async (
+  housingCompanyID: number,
+  userID: number,
+  role: string
+): Promise<boolean> => {
+  let sql = 'DELETE FROM surveys WHERE housing_company_id = ? AND user_id = ?;';
+  let params = [housingCompanyID, userID];
+  if (role === 'admin') {
+    sql = 'DELETE FROM surveys WHERE housing_company_id = ?;';
+    params = [housingCompanyID];
+  }
+  const format = promisePool.format(sql, params);
+  const [headers] = await promisePool.query<ResultSetHeader>(format);
+  if (headers.affectedRows === 0) {
+    throw new CustomError('Surveys not deleted', 404);
   }
   return true;
 };
@@ -95,7 +135,7 @@ const getSurveyByKey = async (key: string): Promise<Survey> => {
     JOIN users
     ON surveys.user_id = users.id
     JOIN housing_companies
-    ON surveys.housing_company_id = housing_companies.id
+    ON housing_company_id = housing_companies.id
     WHERE survey_key = ?`,
     [key]
   );
@@ -106,10 +146,11 @@ const getSurveyByKey = async (key: string): Promise<Survey> => {
 };
 
 const getSurveysByHousingCompany = async (
-  housingCompanyID: number
+  housingCompanyID: number,
+  userID: number,
+  role: string
 ): Promise<Survey[]> => {
-  const [rows] = await promisePool.execute<GetSurvey[]>(
-    `SELECT surveys.id, start_date, end_date, min_responses, max_responses, survey_status, surveys.user_id, survey_key, surveys.housing_company_id,
+  let sql = `SELECT surveys.id, start_date, end_date, min_responses, max_responses, survey_status, surveys.user_id, survey_key, surveys.housing_company_id,
     JSON_OBJECT('user_id', users.id, 'user_name', users.user_name) AS user,
     JSON_OBJECT('housing_company_id', housing_companies.id, 'name', housing_companies.name) AS housing_company
     FROM surveys
@@ -117,9 +158,24 @@ const getSurveysByHousingCompany = async (
     ON surveys.user_id = users.id
     JOIN housing_companies
     ON surveys.housing_company_id = housing_companies.id
-    WHERE housing_company_id = ?`,
-    [housingCompanyID]
-  );
+    WHERE housing_company_id = ? AND surveys.user_id = ?
+    ;`;
+  let params = [housingCompanyID, userID];
+  if (role === 'admin') {
+    sql = `SELECT surveys.id, start_date, end_date, min_responses, max_responses, survey_status, surveys.user_id, survey_key, surveys.housing_company_id,
+    JSON_OBJECT('user_id', users.id, 'user_name', users.user_name) AS user,
+    JSON_OBJECT('housing_company_id', housing_companies.id, 'name', housing_companies.name) AS housing_company
+    FROM surveys
+    JOIN users
+    ON surveys.user_id = users.id
+    JOIN housing_companies
+    ON surveys.housing_company_id = housing_companies.id
+    WHERE housing_company_id = ?
+    ;`;
+    params = [housingCompanyID];
+  }
+  const format = promisePool.format(sql, params);
+  const [rows] = await promisePool.execute<GetSurvey[]>(format);
   if (rows.length === 0) {
     throw new CustomError('No surveys found', 404);
   }
@@ -132,6 +188,7 @@ export {
   postSurvey,
   putSurvey,
   deleteSurvey,
+  deleteAllSurveysFromHousingCompany,
   getSurveyByKey,
   getSurveysByHousingCompany
 };

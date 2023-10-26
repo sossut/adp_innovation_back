@@ -7,6 +7,7 @@ import {
   PutHousingCompany
 } from '../../interfaces/HousingCompany';
 import { deleteAddress } from './addressModel';
+import { deleteAllSurveysFromHousingCompany } from './surveyModel';
 
 const getAllHousingCompanies = async (): Promise<HousingCompany[]> => {
   const [rows] = await promisePool.execute<GetHousingCompany[]>(
@@ -319,6 +320,7 @@ const deleteHousingCompany = async (
     params = [id];
   }
   const addressID = await getAddressIDByHousingCompany(id);
+  await deleteAllSurveysFromHousingCompany(id, userID, role);
   const [headers] = await promisePool.execute<ResultSetHeader>(sql, params);
 
   if (headers.affectedRows === 0) {
@@ -326,6 +328,7 @@ const deleteHousingCompany = async (
   }
   console.log(id);
   await deleteAddress(addressID);
+
   return true;
 };
 

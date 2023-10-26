@@ -18,7 +18,12 @@ router
   .get(surveyListGet)
   .post(
     passport.authenticate('jwt', { session: false }),
-    body('name').isString().isLength({ min: 1, max: 255 }).notEmpty().escape(),
+    body('start_date').isDate().optional().escape(),
+    body('end_date').isDate().optional().escape(),
+    body('min_responses').isNumeric().optional().escape(),
+    body('max_responses').isNumeric().optional().escape(),
+    body('survey_status').isString().optional().escape(),
+    body('survey_key').isString().notEmpty().escape(),
     body('housing_company_id').isNumeric().notEmpty().escape(),
     surveyPost
   );
