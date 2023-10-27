@@ -320,13 +320,13 @@ const deleteHousingCompany = async (
     params = [id];
   }
   const addressID = await getAddressIDByHousingCompany(id);
+
   await deleteAllSurveysFromHousingCompany(id, userID, role);
   const [headers] = await promisePool.execute<ResultSetHeader>(sql, params);
 
   if (headers.affectedRows === 0) {
     throw new CustomError('No housing companies deleted', 400);
   }
-  console.log(id);
   await deleteAddress(addressID);
 
   return true;
