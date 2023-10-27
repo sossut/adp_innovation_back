@@ -153,7 +153,6 @@ const getHousingCompaniesByCurrentUser = async (
   return housingCompanies;
 };
 
-//TODO add role check and user_id
 const getHousingCompaniesByPostcode = async (
   postcodeID: number
 ): Promise<HousingCompany[]> => {
