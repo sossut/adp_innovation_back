@@ -6,7 +6,8 @@ interface Answer {
   id: number;
   answer: number;
   question_id: Question | number;
-  survey_id: Survey;
+  survey_id: Survey | number;
+  survey_key: string;
 }
 
 interface GetAnswer extends RowDataPacket, Answer {}

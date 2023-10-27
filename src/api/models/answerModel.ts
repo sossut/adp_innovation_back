@@ -24,15 +24,47 @@ const getAnswer = async (id: string): Promise<GetAnswer> => {
   return rows[0];
 };
 
-const getAnswersBySurvey = async (surveyID: number): Promise<GetAnswer[]> => {
-  const [rows] = await promisePool.execute<GetAnswer[]>(
-    `SELECT answers.id, question_id, answer, survey_id, questions.question, questions.weight as question_weight
+const getAnswersBySurvey = async (
+  surveyID: number,
+  userID: number,
+  role: string
+): Promise<GetAnswer[]> => {
+  let sql = `SELECT answers.id, question_id, answer, survey_id, 
+    JSON_OBJECT('question', questions.question, 'weight', questions.weight, 'weight', questions.weight) AS question,
+    JSON_OBJECT('survey_id', surveys.id, 'start_date', surveys.start_date, 'end_date', surveys.end_date, 'min_responses', surveys.min_responses, 'max_responses', surveys.max_responses, 'survey_status', surveys.survey_status, 'user_id', surveys.user_id, 'survey_key', surveys.survey_key, 'housing_company_id', surveys.housing_company_id) AS survey,
+    JSON_OBJECT('user_id', users.id, 'user_name', users.user_name) AS user,
+    JSON_OBJECT('housing_company_id', housing_companies.id, 'name', housing_companies.name) AS housing_company
 	 FROM answers
     JOIN questions
     ON answers.question_id = questions.id
-    WHERE survey_id = ?`,
-    [surveyID]
-  );
+    JOIN surveys
+    ON answers.survey_id = surveys.id
+    JOIN users
+    ON surveys.user_id = users.id
+    JOIN housing_companies
+    ON surveys.housing_company_id = housing_companies.id
+    WHERE survey_id = ? AND users.id = ?;`;
+  let params = [surveyID, userID];
+  if (role === 'admin') {
+    sql = `SELECT answers.id, question_id, answer, survey_id, 
+    JSON_OBJECT('question', questions.question, 'weight', questions.weight, 'weight', questions.weight) AS question,
+    JSON_OBJECT('survey_id', surveys.id, 'start_date', surveys.start_date, 'end_date', surveys.end_date, 'min_responses', surveys.min_responses, 'max_responses', surveys.max_responses, 'survey_status', surveys.survey_status, 'user_id', surveys.user_id, 'survey_key', surveys.survey_key, 'housing_company_id', surveys.housing_company_id) AS survey,
+    JSON_OBJECT('user_id', users.id, 'user_name', users.user_name) AS user,
+    JSON_OBJECT('housing_company_id', housing_companies.id, 'name', housing_companies.name) AS housing_company
+    FROM answers
+    JOIN questions
+    ON answers.question_id = questions.id
+    JOIN surveys
+    ON answers.survey_id = surveys.id
+    JOIN users
+    ON surveys.user_id = users.id
+    JOIN housing_companies
+    ON surveys.housing_company_id = housing_companies.id
+    WHERE survey_id = ?;`;
+    params = [surveyID];
+  }
+  const format = promisePool.format(sql, params);
+  const [rows] = await promisePool.execute<GetAnswer[]>(format);
   if (rows.length === 0) {
     throw new CustomError('No answers found', 404);
   }

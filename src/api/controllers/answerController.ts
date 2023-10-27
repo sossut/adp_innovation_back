@@ -8,6 +8,7 @@ import { Request, Response, NextFunction } from 'express';
 import CustomError from '../../classes/CustomError';
 import { PostAnswer } from '../../interfaces/Answer';
 import { User } from '../../interfaces/User';
+import { getSurveyByKey } from '../models/surveyModel';
 
 const answersBySurveyGet = async (
   req: Request<{ id: string }, {}, {}>,
@@ -24,7 +25,11 @@ const answersBySurveyGet = async (
   }
   const id = parseInt(req.params.id);
   try {
-    const answers = await getAnswersBySurvey(id);
+    const answers = await getAnswersBySurvey(
+      id,
+      (req.user as User).id,
+      (req.user as User).role
+    );
     res.json(answers);
   } catch (error) {
     next(error);
@@ -37,6 +42,7 @@ const answerPost = async (
   next: NextFunction
 ) => {
   const errors = validationResult(req);
+
   if (!errors.isEmpty()) {
     const messages = errors
       .array()
@@ -45,6 +51,13 @@ const answerPost = async (
     throw new CustomError(messages, 400);
   }
   try {
+    const surveyId = await getSurveyByKey(req.body.survey_key);
+    console.log(surveyId);
+    if (!surveyId) {
+      throw new CustomError('Survey not found', 404);
+    }
+    req.body.survey_id = surveyId.id;
+
     const answer = await postAnswer(req.body);
     res.json(answer);
   } catch (error) {
