@@ -2,9 +2,10 @@ import express from 'express';
 import {
   answersBySurveyGet,
   answerPost,
-  answerDelete
+  answerDelete,
+  answerAllPost
 } from '../controllers/answerController';
-import { body, param } from 'express-validator';
+import { body, param, check } from 'express-validator';
 import passport from 'passport';
 
 const router = express.Router();
@@ -16,6 +17,15 @@ router
     body('question_id').isNumeric().notEmpty().escape(),
     body('answer').isNumeric().notEmpty().escape(),
     answerPost
+  );
+router
+  .route('/all/')
+  .post(
+    check('data').isArray().notEmpty(),
+    check('data.*.question_id').isNumeric().notEmpty().escape(),
+    check('data.*.answer').isNumeric().notEmpty().escape(),
+    check('survey_key').isString().notEmpty().escape(),
+    answerAllPost
   );
 
 router

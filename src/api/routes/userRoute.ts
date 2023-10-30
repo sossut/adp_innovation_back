@@ -7,7 +7,7 @@ import {
   userListGet,
   userPost,
   userPut,
-  userPutCurrent,
+  userPutCurrent
 } from '../controllers/userController';
 import passport from 'passport';
 
@@ -23,7 +23,7 @@ router
 router.get(
   '/token',
   passport.authenticate('jwt', { session: false }),
-  checkToken,
+  checkToken
 );
 
 router
