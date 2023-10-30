@@ -1,44 +1,44 @@
 import { validationResult } from 'express-validator';
 import {
-  postQuestion,
-  deleteQuestion,
-  putQuestion,
-  getAllQuestions,
-  getQuestion
-} from '../models/questionModel';
+  getAllSections,
+  getSection,
+  postSection,
+  putSection,
+  deleteSection
+} from '../models/sectionModel';
 import { Request, Response, NextFunction } from 'express';
 import CustomError from '../../classes/CustomError';
-import { Question, PostQuestion } from '../../interfaces/Question';
+import { PostSection } from '../../interfaces/Section';
 import { User } from '../../interfaces/User';
 
-const questionListGet = async (
+const sectionGet = async (
+  req: Request<{ id: string }, {}, {}>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const section = await getSection(req.params.id);
+    res.json(section);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const sectionListGet = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const questions = await getAllQuestions();
+    const questions = await getAllSections();
     res.json(questions);
   } catch (error) {
     next(error);
   }
 };
 
-const questionGet = async (
-  req: Request<{ id: string }, {}, {}>,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const question = await getQuestion(req.params.id);
-    res.json(question);
-  } catch (error) {
-    next(error);
-  }
-};
-
-const questionPost = async (
-  req: Request<{}, {}, PostQuestion>,
+const sectionPost = async (
+  req: Request<{}, {}, PostSection>,
   res: Response,
   next: NextFunction
 ) => {
@@ -54,22 +54,22 @@ const questionPost = async (
         .join(', ');
       throw new CustomError(messages, 400);
     }
-    const result = await postQuestion(req.body);
+    const result = await postSection(req.body);
     if (result) {
       res.json({
-        message: 'question added',
-        question_id: result
+        message: 'section added',
+        section_id: result
       });
     } else {
-      throw new CustomError('no question inserted', 400);
+      throw new CustomError('no section inserted', 400);
     }
   } catch (error) {
     next(error);
   }
 };
 
-const questionPut = async (
-  req: Request<{ id: string }, {}, Question>,
+const sectionPut = async (
+  req: Request<{ id: string }, {}, PostSection>,
   res: Response,
   next: NextFunction
 ) => {
@@ -77,19 +77,20 @@ const questionPut = async (
     if ((req.user as User).role !== 'admin') {
       throw new CustomError('Unauthorized', 401);
     }
-    const errors = validationResult(req);
+    const errors = validationResult(req.body);
     if (!errors.isEmpty()) {
       const messages = errors
         .array()
         .map((error) => `${error.msg}: ${error.param}`)
         .join(', ');
+
       throw new CustomError(messages, 400);
     }
-    const question = req.body;
-    const result = await putQuestion(question, parseInt(req.params.id));
+    const section = req.body;
+    const result = await putSection(section, parseInt(req.params.id));
     if (result) {
       res.json({
-        message: 'question updated'
+        message: 'section updated'
       });
     }
   } catch (error) {
@@ -97,7 +98,7 @@ const questionPut = async (
   }
 };
 
-const questionDelete = async (
+const sectionDelete = async (
   req: Request<{ id: string }>,
   res: Response,
   next: NextFunction
@@ -106,18 +107,10 @@ const questionDelete = async (
     if ((req.user as User).role !== 'admin') {
       throw new CustomError('Unauthorized', 401);
     }
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      const messages = errors
-        .array()
-        .map((error) => `${error.msg}: ${error.param}`)
-        .join(', ');
-      throw new CustomError(messages, 400);
-    }
-    const result = await deleteQuestion(parseInt(req.params.id));
+    const result = await deleteSection(parseInt(req.params.id));
     if (result) {
       res.json({
-        message: 'question deleted'
+        message: 'section deleted'
       });
     }
   } catch (error) {
@@ -125,10 +118,4 @@ const questionDelete = async (
   }
 };
 
-export {
-  questionListGet,
-  questionGet,
-  questionPost,
-  questionPut,
-  questionDelete
-};
+export { sectionGet, sectionListGet, sectionPost, sectionPut, sectionDelete };
