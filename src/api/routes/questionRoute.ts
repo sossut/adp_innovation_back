@@ -5,7 +5,8 @@ import {
   questionGet,
   questionListGet,
   questionPost,
-  questionPut
+  questionPut,
+  sectionPost
 } from '../controllers/questionController';
 import passport from 'passport';
 
@@ -19,7 +20,20 @@ router
     body('question_order').isNumeric().notEmpty().escape(),
     body('question').isString().notEmpty().escape(),
     body('weight').isNumeric().notEmpty().escape(),
+    body('section_id').isNumeric().notEmpty().escape(),
     questionPost
+  );
+
+router
+  .route('/section/')
+  .post(
+    passport.authenticate('jwt', { session: false }),
+    body('section_text')
+      .isString()
+      .isLength({ min: 1, max: 255 })
+      .escape()
+      .notEmpty(),
+    sectionPost
   );
 
 router
