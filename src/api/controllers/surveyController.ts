@@ -14,6 +14,7 @@ import CustomError from '../../classes/CustomError';
 import { Survey, PostSurvey } from '../../interfaces/Survey';
 import { User } from '../../interfaces/User';
 import MessageResponse from '../../interfaces/MessageResponse';
+import { getApartmentCountByHousingCompany } from '../models/housingCompanyModel';
 
 const surveyListGet = async (
   req: Request,
@@ -116,14 +117,15 @@ const surveyPost = async (
         .join(', ');
       throw new CustomError(messages, 400);
     }
+    const apartmentCount = await getApartmentCountByHousingCompany(
+      req.body.housing_company_id as number
+    );
     const user = req.user as User;
     req.body.user_id = user.id;
     if (!req.body.end_date) {
       req.body.end_date = null;
     }
-    if (!req.body.max_responses) {
-      req.body.max_responses = null;
-    }
+    req.body.max_responses = apartmentCount;
     if (!req.body.min_responses) {
       req.body.min_responses = null;
     }

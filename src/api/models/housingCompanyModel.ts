@@ -86,7 +86,7 @@ const getHousingCompaniesByUser = async (
     `SELECT housing_companies.id, housing_companies.NAME, apartment_count, address_id, housing_companies.user_id,
     JSON_OBJECT('user_id', users.id, 'user_name', users.user_name) AS user,
     JSON_OBJECT('address_id', addresses.id, 'street', streets.name, 'number', addresses.number) AS address,
-	 JSON_OBJECT('postcode_id', postcodes.id, 'code', postcodes.code, 'name', postcodes.name) AS postcode,
+	  JSON_OBJECT('postcode_id', postcodes.id, 'code', postcodes.code, 'name', postcodes.name) AS postcode,
     JSON_OBJECT('city_id', cities.id, 'name', cities.name) AS city
     FROM housing_companies
     JOIN users
@@ -114,6 +114,20 @@ const getHousingCompaniesByUser = async (
     address: JSON.parse(row.address?.toString() || '{}')
   }));
   return housingCompanies;
+};
+
+const getApartmentCountByHousingCompany = async (
+  id: number
+): Promise<number> => {
+  const [rows] = await promisePool.execute<GetHousingCompany[]>(
+    `SELECT apartment_count FROM housing_companies
+    WHERE id = ?;`,
+    [id]
+  );
+  if (rows.length === 0) {
+    throw new CustomError('No housing companies found', 404);
+  }
+  return rows[0].apartment_count as number;
 };
 
 const getHousingCompaniesByCurrentUser = async (
@@ -334,6 +348,7 @@ const deleteHousingCompany = async (
 export {
   getAllHousingCompanies,
   getHousingCompany,
+  getApartmentCountByHousingCompany,
   getHousingCompaniesByUser,
   getHousingCompaniesByCurrentUser,
   getHousingCompaniesByPostcode,
