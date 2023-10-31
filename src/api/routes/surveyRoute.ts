@@ -15,7 +15,7 @@ const router = express.Router();
 
 router
   .route('/')
-  .get(surveyListGet)
+  .get(passport.authenticate('jwt', { session: false }), surveyListGet)
   .post(
     passport.authenticate('jwt', { session: false }),
     body('start_date').isDate().optional().escape(),
@@ -30,7 +30,11 @@ router
 
 router
   .route('/:id')
-  .get(param('id').isNumeric(), surveyGet)
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    param('id').isNumeric(),
+    surveyGet
+  )
   .put(
     passport.authenticate('jwt', { session: false }),
     param('id').isNumeric(),

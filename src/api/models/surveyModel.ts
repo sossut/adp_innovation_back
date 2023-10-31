@@ -108,6 +108,25 @@ const getSurveyByKey = async (key: string): Promise<Survey> => {
   return rows[0];
 };
 
+const checkIfSurveyBelongsToUser = async (
+  surveyID: number,
+  userID: number
+): Promise<boolean> => {
+  const [rows] = await promisePool.execute<GetSurvey[]>(
+    `SELECT user_id FROM surveys
+    WHERE id = ?;`,
+    [surveyID]
+  );
+  if (rows.length === 0) {
+    throw new CustomError('Survey not found', 404);
+  }
+  if (rows[0].user_id === userID) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
 const getSurveysByHousingCompany = async (
   housingCompanyID: number,
   userID: number,
@@ -199,5 +218,6 @@ export {
   deleteSurvey,
   deleteAllSurveysFromHousingCompany,
   getSurveyByKey,
-  getSurveysByHousingCompany
+  getSurveysByHousingCompany,
+  checkIfSurveyBelongsToUser
 };

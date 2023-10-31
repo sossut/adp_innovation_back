@@ -4,7 +4,8 @@ import {
   deleteQuestion,
   putQuestion,
   getAllQuestions,
-  getQuestion
+  getQuestion,
+  getAllActiveQuestions
 } from '../models/questionModel';
 import { Request, Response, NextFunction } from 'express';
 import CustomError from '../../classes/CustomError';
@@ -18,6 +19,19 @@ const questionListGet = async (
 ) => {
   try {
     const questions = await getAllQuestions();
+    res.json(questions);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const questionActiveListGet = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const questions = await getAllActiveQuestions();
     res.json(questions);
   } catch (error) {
     next(error);
@@ -42,17 +56,17 @@ const questionPost = async (
   res: Response,
   next: NextFunction
 ) => {
+  const errors = validationResult(req.body);
+  if (!errors.isEmpty()) {
+    const messages = errors
+      .array()
+      .map((error) => `${error.msg}: ${error.param}`)
+      .join(', ');
+    throw new CustomError(messages, 400);
+  }
   try {
     if ((req.user as User).role !== 'admin') {
       throw new CustomError('Unauthorized', 401);
-    }
-    const errors = validationResult(req.body);
-    if (!errors.isEmpty()) {
-      const messages = errors
-        .array()
-        .map((error) => `${error.msg}: ${error.param}`)
-        .join(', ');
-      throw new CustomError(messages, 400);
     }
     const result = await postQuestion(req.body);
     if (result) {
@@ -73,17 +87,17 @@ const questionPut = async (
   res: Response,
   next: NextFunction
 ) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const messages = errors
+      .array()
+      .map((error) => `${error.msg}: ${error.param}`)
+      .join(', ');
+    throw new CustomError(messages, 400);
+  }
   try {
     if ((req.user as User).role !== 'admin') {
       throw new CustomError('Unauthorized', 401);
-    }
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      const messages = errors
-        .array()
-        .map((error) => `${error.msg}: ${error.param}`)
-        .join(', ');
-      throw new CustomError(messages, 400);
     }
     const question = req.body;
     const result = await putQuestion(question, parseInt(req.params.id));
@@ -102,17 +116,17 @@ const questionDelete = async (
   res: Response,
   next: NextFunction
 ) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const messages = errors
+      .array()
+      .map((error) => `${error.msg}: ${error.param}`)
+      .join(', ');
+    throw new CustomError(messages, 400);
+  }
   try {
     if ((req.user as User).role !== 'admin') {
       throw new CustomError('Unauthorized', 401);
-    }
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      const messages = errors
-        .array()
-        .map((error) => `${error.msg}: ${error.param}`)
-        .join(', ');
-      throw new CustomError(messages, 400);
     }
     const result = await deleteQuestion(parseInt(req.params.id));
     if (result) {
@@ -127,6 +141,7 @@ const questionDelete = async (
 
 export {
   questionListGet,
+  questionActiveListGet,
   questionGet,
   questionPost,
   questionPut,

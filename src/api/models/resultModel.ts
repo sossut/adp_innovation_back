@@ -1,12 +1,17 @@
 import { promisePool } from '../../database/db';
 import CustomError from '../../classes/CustomError';
 import { ResultSetHeader } from 'mysql2';
-import { GetResult, PostResult, PutResult } from '../../interfaces/Result';
+import {
+  GetResult,
+  PostResult,
+  PutResult,
+  Result
+} from '../../interfaces/Result';
 
-const getAllResults = async (): Promise<GetResult[]> => {
+const getAllResults = async (): Promise<Result[]> => {
   const [rows] = await promisePool.execute<GetResult[]>(
-    `SELECT results.id, date_time, filename, results.survey_id 
-    JSON_OBJECT('survey_id', surveys.id, 'start_date', surveys.start_date, 'end_date', surveys.end_date, 'min_responses', surveys.min_responses, 'max_responses', surveys.max_responses, 'survey_status', surveys.survey_status, 'user_id', surveys.user_id, 'survey_key', surveys.survey_key, 'housing_company_id', surveys.housing_company_id) AS survey
+    `SELECT results.id, date_time, filename, results.survey_id, 
+    JSON_OBJECT('survey_id', surveys.id, 'start_date', surveys.start_date, 'end_date', surveys.end_date, 'min_responses', surveys.min_responses, 'max_responses', surveys.max_responses, 'survey_status', surveys.survey_status, 'user_id', surveys.user_id, 'survey_key', surveys.survey_key, 'housing_company_id', surveys.housing_company_id) AS survey,
     JSON_OBJECT('housing_company_id', housing_companies.id, 'name', housing_companies.name, 'street', streets.name, 'street_number', addresses.number, 'postcode', postcodes.code, 'city', cities.name) AS housing_company
     FROM results
     JOIN surveys
@@ -20,18 +25,23 @@ const getAllResults = async (): Promise<GetResult[]> => {
     JOIN postcodes
     ON streets.postcode_id = postcodes.id
     JOIN cities
-    ON postcoded.city_id = cities.id;`
+    ON postcodes.city_id = cities.id;`
   );
   if (rows.length === 0) {
     throw new CustomError('No results found', 404);
   }
-  return rows;
+  const results: Result[] = rows.map((row) => ({
+    ...row,
+    survey: JSON.parse(row.survey?.toString() || '{}'),
+    housing_company: JSON.parse(row.housing_company?.toString() || '{}')
+  }));
+  return results;
 };
 
 const getResult = async (id: string): Promise<GetResult> => {
   const [rows] = await promisePool.execute<GetResult[]>(
-    `SELECT results.id, date_time, filename, results.survey_id 
-    JSON_OBJECT('survey_id', surveys.id, 'start_date', surveys.start_date, 'end_date', surveys.end_date, 'min_responses', surveys.min_responses, 'max_responses', surveys.max_responses, 'survey_status', surveys.survey_status, 'user_id', surveys.user_id, 'survey_key', surveys.survey_key, 'housing_company_id', surveys.housing_company_id) AS survey
+    `SELECT results.id, date_time, filename, results.survey_id, 
+    JSON_OBJECT('survey_id', surveys.id, 'start_date', surveys.start_date, 'end_date', surveys.end_date, 'min_responses', surveys.min_responses, 'max_responses', surveys.max_responses, 'survey_status', surveys.survey_status, 'user_id', surveys.user_id, 'survey_key', surveys.survey_key, 'housing_company_id', surveys.housing_company_id) AS survey,
     JSON_OBJECT('housing_company_id', housing_companies.id, 'name', housing_companies.name, 'street', streets.name, 'street_number', addresses.number, 'postcode', postcodes.code, 'city', cities.name) AS housing_company
     FROM results
     JOIN surveys
@@ -45,8 +55,8 @@ const getResult = async (id: string): Promise<GetResult> => {
     JOIN postcodes
     ON streets.postcode_id = postcodes.id
     JOIN cities
-    ON postcoded.city_id = cities.id
-    WHERE results.id = ?`,
+    ON postcodes.city_id = cities.id
+    WHERE results.id = ?;`,
     [id]
   );
   if (rows.length === 0) {
@@ -56,6 +66,7 @@ const getResult = async (id: string): Promise<GetResult> => {
 };
 
 const postResult = async (result: PostResult) => {
+  console.log(result);
   const [headers] = await promisePool.execute<ResultSetHeader>(
     `INSERT INTO results (date_time, filename, survey_id)
     VALUES (?, ?, ?)`,
@@ -64,7 +75,12 @@ const postResult = async (result: PostResult) => {
   return headers.insertId;
 };
 
-const putResult = async (data: PutResult, id: number): Promise<boolean> => {
+const putResult = async (
+  data: PutResult,
+  id: number,
+  userID: number,
+  role: string
+): Promise<boolean> => {
   const sql = promisePool.format('UPDATE results SET ? WHERE id = ?;', [
     data,
     id
@@ -77,7 +93,11 @@ const putResult = async (data: PutResult, id: number): Promise<boolean> => {
   return true;
 };
 
-const deleteResult = async (id: number): Promise<boolean> => {
+const deleteResult = async (
+  id: number,
+  userID: number,
+  role: string
+): Promise<boolean> => {
   const sql = promisePool.format('DELETE FROM results WHERE id = ?;', [id]);
   const [headers] = await promisePool.query<ResultSetHeader>(sql);
   if (headers.affectedRows === 0) {

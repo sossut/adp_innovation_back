@@ -3,6 +3,7 @@ import express from 'express';
 import {
   questionDelete,
   questionGet,
+  questionActiveListGet,
   questionListGet,
   questionPost,
   questionPut
@@ -28,5 +29,7 @@ router
   .get(questionGet)
   .put(passport.authenticate('jwt', { session: false }), questionPut)
   .delete(passport.authenticate('jwt', { session: false }), questionDelete);
+
+router.route('/active').get(questionActiveListGet);
 
 export default router;

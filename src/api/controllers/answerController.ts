@@ -114,11 +114,11 @@ const answerDelete = async (
       .join(', ');
     throw new CustomError(messages, 400);
   }
-  if ((req.user as User).role !== 'admin') {
-    throw new CustomError('Unauthorized', 401);
-  }
-  const id = parseInt(req.params.id);
   try {
+    if ((req.user as User).role !== 'admin') {
+      throw new CustomError('Unauthorized', 401);
+    }
+    const id = parseInt(req.params.id);
     const answer = await deleteAnswer(id);
     res.json(answer);
   } catch (error) {

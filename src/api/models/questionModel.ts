@@ -19,6 +19,16 @@ const getAllQuestions = async (): Promise<Question[]> => {
   return rows;
 };
 
+const getAllActiveQuestions = async (): Promise<Question[]> => {
+  const [rows] = await promisePool.execute<GetQuestion[]>(
+    'SELECT * FROM questions WHERE active = "true";'
+  );
+  if (rows.length === 0) {
+    throw new CustomError('No questions found', 404);
+  }
+  return rows;
+};
+
 const getQuestion = async (id: string): Promise<Question> => {
   const [rows] = await promisePool.execute<GetQuestion[]>(
     'SELECT * FROM questions WHERE id = ?',
@@ -71,6 +81,7 @@ const deleteQuestion = async (id: number) => {
 
 export {
   getAllQuestions,
+  getAllActiveQuestions,
   getQuestion,
   postQuestion,
   putQuestion,

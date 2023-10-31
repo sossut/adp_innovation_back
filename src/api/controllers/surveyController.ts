@@ -14,21 +14,27 @@ import CustomError from '../../classes/CustomError';
 import { Survey, PostSurvey } from '../../interfaces/Survey';
 import { User } from '../../interfaces/User';
 import MessageResponse from '../../interfaces/MessageResponse';
-import { getApartmentCountByHousingCompany } from '../models/housingCompanyModel';
+import {
+  checkIfHousingCompanyBelongsToUser,
+  getApartmentCountByHousingCompany
+} from '../models/housingCompanyModel';
 
 const surveyListGet = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const messages = errors
+      .array()
+      .map((error) => `${error.msg}: ${error.param}`)
+      .join(', ');
+    throw new CustomError(messages, 400);
+  }
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      const messages = errors
-        .array()
-        .map((error) => `${error.msg}: ${error.param}`)
-        .join(', ');
-      throw new CustomError(messages, 400);
+    if ((req.user as User).role !== 'admin') {
+      throw new CustomError('Unauthorized', 401);
     }
     const surveys = await getAllSurveys();
     res.json(surveys);
@@ -38,15 +44,15 @@ const surveyListGet = async (
 };
 
 const surveyGet = async (req: Request, res: Response, next: NextFunction) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const messages = errors
+      .array()
+      .map((error) => `${error.msg}: ${error.param}`)
+      .join(', ');
+    throw new CustomError(messages, 400);
+  }
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      const messages = errors
-        .array()
-        .map((error) => `${error.msg}: ${error.param}`)
-        .join(', ');
-      throw new CustomError(messages, 400);
-    }
     const survey = await getSurvey(parseInt(req.params.id));
     res.json(survey);
   } catch (error) {
@@ -59,15 +65,15 @@ const surveyGetByKey = async (
   res: Response,
   next: NextFunction
 ) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const messages = errors
+      .array()
+      .map((error) => `${error.msg}: ${error.param}`)
+      .join(', ');
+    throw new CustomError(messages, 400);
+  }
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      const messages = errors
-        .array()
-        .map((error) => `${error.msg}: ${error.param}`)
-        .join(', ');
-      throw new CustomError(messages, 400);
-    }
     const survey = await getSurveyByKey(req.params.key);
     res.json(survey);
   } catch (error) {
@@ -80,15 +86,15 @@ const surveyListByHousingCompanyGet = async (
   res: Response,
   next: NextFunction
 ) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const messages = errors
+      .array()
+      .map((error) => `${error.msg}: ${error.param}`)
+      .join(', ');
+    throw new CustomError(messages, 400);
+  }
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      const messages = errors
-        .array()
-        .map((error) => `${error.msg}: ${error.param}`)
-        .join(', ');
-      throw new CustomError(messages, 400);
-    }
     const housingCompanyId = parseInt(req.params.id);
     const userID = (req.user as User).id;
     const role = (req.user as User).role;
@@ -108,14 +114,23 @@ const surveyPost = async (
   res: Response,
   next: NextFunction
 ) => {
+  const errors = validationResult(req.body);
+  if (!errors.isEmpty()) {
+    const messages = errors
+      .array()
+      .map((error) => `${error.msg}: ${error.param}`)
+      .join(', ');
+    throw new CustomError(messages, 400);
+  }
   try {
-    const errors = validationResult(req.body);
-    if (!errors.isEmpty()) {
-      const messages = errors
-        .array()
-        .map((error) => `${error.msg}: ${error.param}`)
-        .join(', ');
-      throw new CustomError(messages, 400);
+    if ((req.user as User).role !== 'admin') {
+      const checkUser = await checkIfHousingCompanyBelongsToUser(
+        req.body.housing_company_id as number,
+        (req.user as User).id
+      );
+      if (!checkUser) {
+        throw new CustomError('Unauthorized', 403);
+      }
     }
     const apartmentCount = await getApartmentCountByHousingCompany(
       req.body.housing_company_id as number
@@ -153,15 +168,15 @@ const surveyPut = async (
   res: Response,
   next: NextFunction
 ) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const messages = errors
+      .array()
+      .map((error) => `${error.msg}: ${error.param}`)
+      .join(', ');
+    throw new CustomError(messages, 400);
+  }
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      const messages = errors
-        .array()
-        .map((error) => `${error.msg}: ${error.param}`)
-        .join(', ');
-      throw new CustomError(messages, 400);
-    }
     const survey = req.body;
     const id = parseInt(req.params.id);
     const userID = (req.user as User).id;
@@ -183,15 +198,15 @@ const surveyDelete = async (
   res: Response,
   next: NextFunction
 ) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const messages = errors
+      .array()
+      .map((error) => `${error.msg}: ${error.param}`)
+      .join(', ');
+    throw new CustomError(messages, 400);
+  }
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      const messages = errors
-        .array()
-        .map((error) => `${error.msg}: ${error.param}`)
-        .join(', ');
-      throw new CustomError(messages, 400);
-    }
     const userID = (req.user as User).id;
     const role = (req.user as User).role;
     const result = await deleteSurvey(parseInt(req.params.id), userID, role);

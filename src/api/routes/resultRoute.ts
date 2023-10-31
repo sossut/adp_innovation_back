@@ -3,6 +3,7 @@ import {
   resultListGet,
   resultGet,
   resultPost,
+  resultPut,
   resultDelete
 } from '../controllers/resultController';
 import { body, param } from 'express-validator';
@@ -21,28 +22,24 @@ const fileFilter = (
   }
 };
 
-const upload = multer({ dest: 'uploads/', fileFilter });
+const upload = multer({ dest: './uploads/', fileFilter });
 
 const router = express.Router();
 
 router
   .route('/')
-  .get(
-    // passport.authenticate('jwt', { session: false }),
-    resultListGet
-  )
+  .get(passport.authenticate('jwt', { session: false }), resultListGet)
   .post(
     passport.authenticate('jwt', { session: false }),
-    upload.single('file'),
+    upload.single('filename'),
     body('survey_id').isNumeric().notEmpty().escape(),
-    body('filename').isString().notEmpty().escape(),
     resultPost
   );
 
 router
   .route('/:id')
   .get(
-    // passport.authenticate('jwt', { session: false }),
+    passport.authenticate('jwt', { session: false }),
     param('id').isNumeric(),
     resultGet
   )
@@ -50,6 +47,11 @@ router
     passport.authenticate('jwt', { session: false }),
     param('id').isNumeric(),
     resultDelete
+  )
+  .put(
+    passport.authenticate('jwt', { session: false }),
+    param('id').isNumeric(),
+    resultPut
   );
 
 export default router;

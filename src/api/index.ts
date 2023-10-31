@@ -9,6 +9,7 @@ import sectionRoute from './routes/sectionRoute';
 import questionRoute from './routes/questionRoute';
 import surveyRoute from './routes/surveyRoute';
 import answerRoute from './routes/answerRoute';
+import resultRoute from './routes/resultRoute';
 import MessageResponse from '../interfaces/MessageResponse';
 import passport from 'passport';
 
@@ -33,5 +34,6 @@ router.use('/section', sectionRoute);
 router.use('/question', questionRoute);
 router.use('/survey', surveyRoute);
 router.use('/answer', answerRoute);
+router.use('/result', resultRoute);
 
 export default router;

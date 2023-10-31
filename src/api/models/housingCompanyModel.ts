@@ -130,6 +130,25 @@ const getApartmentCountByHousingCompany = async (
   return rows[0].apartment_count as number;
 };
 
+const checkIfHousingCompanyBelongsToUser = async (
+  id: number,
+  userID: number
+): Promise<boolean> => {
+  const [rows] = await promisePool.execute<GetHousingCompany[]>(
+    `SELECT user_id FROM housing_companies
+    WHERE id = ?;`,
+    [id]
+  );
+  if (rows.length === 0) {
+    throw new CustomError('No housing companies found', 404);
+  }
+  if (rows[0].user_id === userID) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
 const getHousingCompaniesByCurrentUser = async (
   userID: number
 ): Promise<HousingCompany[]> => {
@@ -349,6 +368,7 @@ export {
   getAllHousingCompanies,
   getHousingCompany,
   getApartmentCountByHousingCompany,
+  checkIfHousingCompanyBelongsToUser,
   getHousingCompaniesByUser,
   getHousingCompaniesByCurrentUser,
   getHousingCompaniesByPostcode,
