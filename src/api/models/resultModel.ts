@@ -81,14 +81,21 @@ const putResult = async (
   userID: number,
   role: string
 ): Promise<boolean> => {
-  const sql = promisePool.format('UPDATE results SET ? WHERE id = ?;', [
-    data,
-    id
-  ]);
+  let sql = `UPDATE results 
+  JOIN surveys
+  ON results.survey_id = surveys.id
+  SET ?
+  WHERE results.id = ? AND surveys.user_id = ?;`;
+  let params = [data, id, userID];
+  if (role === 'admin') {
+    sql = 'UPDATE results SET ? WHERE id = ?;';
+    params = [data, id];
+  }
+  const format = promisePool.format(sql, params);
 
-  const [headers] = await promisePool.query<ResultSetHeader>(sql);
+  const [headers] = await promisePool.query<ResultSetHeader>(format);
   if (headers.affectedRows === 0) {
-    throw new CustomError('Result not found', 404);
+    throw new CustomError('Result not updated', 404);
   }
   return true;
 };
@@ -98,10 +105,19 @@ const deleteResult = async (
   userID: number,
   role: string
 ): Promise<boolean> => {
-  const sql = promisePool.format('DELETE FROM results WHERE id = ?;', [id]);
-  const [headers] = await promisePool.query<ResultSetHeader>(sql);
+  let sql = `DELETE results FROM results
+  JOIN surveys
+  ON results.survey_id = surveys.id
+  WHERE results.id = ? AND surveys.user_id = ?;`;
+  let params = [id, userID];
+  if (role === 'admin') {
+    sql = 'DELETE FROM results WHERE id = ?;';
+    params = [id];
+  }
+  const format = promisePool.format(sql, params);
+  const [headers] = await promisePool.query<ResultSetHeader>(format);
   if (headers.affectedRows === 0) {
-    throw new CustomError('Result not found', 404);
+    throw new CustomError('Result not deleted', 404);
   }
   return true;
 };
