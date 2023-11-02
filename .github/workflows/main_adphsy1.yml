@@ -9,6 +9,7 @@ on:
       - main
   workflow_dispatch:
 env:
+  NODE_ENV: development
   DB_HOST: ${{ secrets.DB_HOST }}
   DB_USER: ${{ secrets.DB_USER }}
   DB_PASS: ${{ secrets.DB_PASS }}
