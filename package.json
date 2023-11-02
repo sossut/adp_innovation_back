@@ -9,7 +9,6 @@
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "lint": "eslint --fix src test",
-    "test": "jest",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],
