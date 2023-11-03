@@ -1,4 +1,4 @@
-declare module 'epress';
+declare module 'express';
 declare global {
   namespace Express {
     interface Request {
