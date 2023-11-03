@@ -1,5 +1,4 @@
-export {};
-
+declare module 'epress';
 declare global {
   namespace Express {
     interface Request {
