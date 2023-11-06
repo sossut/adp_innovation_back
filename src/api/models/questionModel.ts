@@ -11,27 +11,46 @@ import {
 
 const getAllQuestions = async (): Promise<Question[]> => {
   const [rows] = await promisePool.execute<GetQuestion[]>(
-    'SELECT * FROM questions;'
+    'SELECT * FROM questions_choices_summary;'
   );
   if (rows.length === 0) {
     throw new CustomError('No questions found', 404);
   }
-  return rows;
+
+  const questions: Question[] = rows.map((row) => ({
+    ...row,
+    question: JSON.parse(row.question?.toString() || '{}'),
+    choices: JSON.parse(row.choices?.toString() || '{}')
+  }));
+  return questions;
 };
 
 const getAllActiveQuestions = async (): Promise<Question[]> => {
   const [rows] = await promisePool.execute<GetQuestion[]>(
-    'SELECT * FROM questions WHERE active = "true";'
+    'SELECT * FROM questions_choices_summary_active;'
   );
   if (rows.length === 0) {
     throw new CustomError('No questions found', 404);
   }
-  return rows;
+  const questions: Question[] = rows.map((row) => ({
+    ...row,
+    question: JSON.parse(row.question?.toString() || '{}'),
+    choices: JSON.parse(row.choices?.toString() || '{}')
+  }));
+  return questions;
 };
 
 const getQuestion = async (id: string): Promise<Question> => {
   const [rows] = await promisePool.execute<GetQuestion[]>(
-    'SELECT * FROM questions WHERE id = ?',
+    `SELECT
+        JSON_OBJECT ('question_id', questions.id, 'question', questions.question, 'weight', questions.weight, 'question_order', questions.question_order, 'active', active, 'section_id', section_id) AS question,
+        GROUP_CONCAT(JSON_OBJECT('choices_id', choices.id, 'choice_text', choices.choice_text, 'choice_value', choices.choice_value)) AS choices
+      FROM questions
+        JOIN questions_choices
+          ON questions.id = questions_choices.question_id
+        JOIN choices
+          ON questions_choices.choice_id = choices.id
+      WHERE questions.id = ?;`,
     [id]
   );
   if (rows.length === 0) {

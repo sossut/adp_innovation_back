@@ -23,13 +23,12 @@ router
     body('section_id').isNumeric().notEmpty().escape(),
     questionPost
   );
+router.route('/active').get(questionActiveListGet);
 
 router
   .route('/:id')
   .get(questionGet)
   .put(passport.authenticate('jwt', { session: false }), questionPut)
   .delete(passport.authenticate('jwt', { session: false }), questionDelete);
-
-router.route('/active').get(questionActiveListGet);
 
 export default router;

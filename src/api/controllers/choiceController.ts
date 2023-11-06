@@ -12,7 +12,6 @@ import CustomError from '../../classes/CustomError';
 import { PostChoice } from '../../interfaces/Choice';
 import { User } from '../../interfaces/User';
 import MessageResponse from '../../interfaces/MessageResponse';
-import { parse } from 'path';
 
 const choiceListGet = async (
   req: Request,
