@@ -10,6 +10,7 @@ import questionRoute from './routes/questionRoute';
 import surveyRoute from './routes/surveyRoute';
 import answerRoute from './routes/answerRoute';
 import resultRoute from './routes/resultRoute';
+import choiceRoute from './routes/choiceRoute';
 import MessageResponse from '../interfaces/MessageResponse';
 import passport from 'passport';
 
@@ -35,5 +36,6 @@ router.use('/question', questionRoute);
 router.use('/survey', surveyRoute);
 router.use('/answer', answerRoute);
 router.use('/result', resultRoute);
+router.use('/choice', choiceRoute);
 
 export default router;
