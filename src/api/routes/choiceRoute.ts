@@ -17,8 +17,8 @@ router
   .get(passport.authenticate('jwt', { session: false }), choiceListGet)
   .post(
     passport.authenticate('jwt', { session: false }),
-    body('value').isString().notEmpty().escape(),
-    body('question_id').isNumeric().notEmpty().escape(),
+    body('choice_value').isInt({ min: 1, max: 3 }).notEmpty().escape(),
+    body('choice_text').isString().notEmpty().escape(),
     choicePost
   );
 
@@ -32,6 +32,7 @@ router
   .put(
     passport.authenticate('jwt', { session: false }),
     param('id').isNumeric(),
+    body('choice_value').optional().isInt({ min: 1, max: 3 }).escape(),
     choicePut
   )
   .delete(

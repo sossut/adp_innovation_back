@@ -11,6 +11,8 @@ import { Request, Response, NextFunction } from 'express';
 import CustomError from '../../classes/CustomError';
 import { PostChoice } from '../../interfaces/Choice';
 import { User } from '../../interfaces/User';
+import MessageResponse from '../../interfaces/MessageResponse';
+import { parse } from 'path';
 
 const choiceListGet = async (
   req: Request,
@@ -101,7 +103,13 @@ const choicePost = async (
       throw new CustomError('Unauthorized', 401);
     }
     const choice = await postChoice(req.body);
-    res.json(choice);
+    if (choice) {
+      const message: MessageResponse = {
+        message: 'Choice added',
+        id: choice
+      };
+      res.json(message);
+    }
   } catch (error) {
     next(error);
   }
@@ -126,7 +134,13 @@ const choicePut = async (
       throw new CustomError('Unauthorized', 401);
     }
     const choice = await putChoice(req.body, parseInt(req.params.id));
-    res.json(choice);
+    if (choice) {
+      const message: MessageResponse = {
+        message: 'Choice updated',
+        id: choice
+      };
+      res.json(message);
+    }
   } catch (error) {
     next(error);
   }
@@ -151,7 +165,13 @@ const choiceDelete = async (
     }
     const id = parseInt(req.params.id);
     const choice = await deleteChoice(id);
-    res.json(choice);
+    if (choice) {
+      const message: MessageResponse = {
+        message: 'Choice deleted',
+        id: parseInt(req.params.id)
+      };
+      res.json(message);
+    }
   } catch (error) {
     next(error);
   }
