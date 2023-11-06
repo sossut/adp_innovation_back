@@ -10,7 +10,7 @@ import {
 
 const getAllQuestionChoices = async (): Promise<QuestionChoice[]> => {
   const [rows] = await promisePool.execute<GetQuestionChoice[]>(
-    `SELECT question_choices.id, question_choices.question_id, question_choices.choice_id
+    `SELECT questions_choices.id, question_choices.question_id, question_choices.choice_id
     FROM question_choices;`
   );
   if (rows.length === 0) {
@@ -24,7 +24,7 @@ const getAllQuestionChoices = async (): Promise<QuestionChoice[]> => {
 
 const getQuestionChoice = async (id: string): Promise<GetQuestionChoice> => {
   const [rows] = await promisePool.execute<GetQuestionChoice[]>(
-    `SELECT question_choices.id, question_choices.question_id, question_choices.choice_id
+    `SELECT questions_choices.id, question_choices.question_id, question_choices.choice_id
     FROM question_choices
     WHERE question_choices.id = ?;`,
     [id]
@@ -33,6 +33,21 @@ const getQuestionChoice = async (id: string): Promise<GetQuestionChoice> => {
     throw new CustomError('No question_choices found', 404);
   }
   return rows[0];
+};
+
+const getQuestionChoiceIdsByQuestionId = async (
+  question_id: number
+): Promise<QuestionChoice[]> => {
+  const [rows] = await promisePool.execute<GetQuestionChoice[]>(
+    `SELECT id
+    FROM questions_choices
+    WHERE question_id = ?;`,
+    [question_id]
+  );
+  if (rows.length === 0) {
+    throw new CustomError('No question_choices found', 404);
+  }
+  return rows;
 };
 
 const getQuestionChoicesByQuestionId = async (
@@ -58,7 +73,7 @@ const getQuestionChoicesByQuestionId = async (
 
 const postQuestionChoice = async (questionChoice: PostQuestionChoice) => {
   const [headers] = await promisePool.execute<ResultSetHeader>(
-    'INSERT INTO question_choices (question_id, choice_id) VALUES (?, ?);',
+    'INSERT INTO questions_choices (question_id, choice_id) VALUES (?, ?);',
     [questionChoice.question_id, questionChoice.choice_id]
   );
   if (headers.affectedRows === 0) {
@@ -69,7 +84,7 @@ const postQuestionChoice = async (questionChoice: PostQuestionChoice) => {
 
 const putQuestionChoice = async (data: PutQuestionChoice, id: number) => {
   const sql = promisePool.format(
-    'UPDATE question_choices SET ? WHERE id = ?;',
+    'UPDATE questions_choices SET ? WHERE id = ?;',
     [data, id]
   );
   const [headers] = await promisePool.execute<ResultSetHeader>(sql);
@@ -81,7 +96,7 @@ const putQuestionChoice = async (data: PutQuestionChoice, id: number) => {
 
 const deleteQuestionChoice = async (id: number) => {
   const [headers] = await promisePool.execute<ResultSetHeader>(
-    'DELETE FROM question_choices WHERE id = ?;',
+    'DELETE FROM questions_choices WHERE id = ?;',
     [id]
   );
   if (headers.affectedRows === 0) {
@@ -93,6 +108,7 @@ const deleteQuestionChoice = async (id: number) => {
 export {
   getAllQuestionChoices,
   getQuestionChoice,
+  getQuestionChoiceIdsByQuestionId,
   getQuestionChoicesByQuestionId,
   postQuestionChoice,
   putQuestionChoice,

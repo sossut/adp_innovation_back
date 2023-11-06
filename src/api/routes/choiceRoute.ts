@@ -33,6 +33,7 @@ router
     passport.authenticate('jwt', { session: false }),
     param('id').isNumeric(),
     body('choice_value').optional().isInt({ min: 1, max: 3 }).escape(),
+    body('choice_text').optional().isString().escape(),
     choicePut
   )
   .delete(

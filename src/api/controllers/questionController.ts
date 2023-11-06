@@ -11,6 +11,15 @@ import { Request, Response, NextFunction } from 'express';
 import CustomError from '../../classes/CustomError';
 import { Question, PostQuestion } from '../../interfaces/Question';
 import { User } from '../../interfaces/User';
+import {
+  getQuestionChoiceIdsByQuestionId,
+  postQuestionChoice,
+  putQuestionChoice
+} from '../models/questionChoiceModel';
+import {
+  PostQuestionChoice,
+  PutQuestionChoice
+} from '../../interfaces/QuestionChoice';
 
 const questionListGet = async (
   req: Request,
@@ -68,7 +77,13 @@ const questionPost = async (
     if ((req.user as User).role !== 'admin') {
       throw new CustomError('Unauthorized', 401);
     }
+
     const result = await postQuestion(req.body);
+    const choices = req.body.choices as PostQuestionChoice[];
+    choices?.forEach(async (element) => {
+      element.question_id = result;
+      await postQuestionChoice(element);
+    });
     if (result) {
       res.json({
         message: 'question added',
@@ -98,6 +113,21 @@ const questionPut = async (
   try {
     if ((req.user as User).role !== 'admin') {
       throw new CustomError('Unauthorized', 401);
+    }
+
+    const choices = req.body.choices as PutQuestionChoice[];
+    if (choices) {
+      const questionsChoises = await getQuestionChoiceIdsByQuestionId(
+        parseInt(req.params.id)
+      );
+      for (let i = 0; i < questionsChoises.length; i++) {
+        const qC = {
+          question_id: parseInt(req.params.id),
+          choice_id: choices[i].choice_id
+        };
+        await putQuestionChoice(qC, questionsChoises[i].id);
+      }
+      delete req.body.choices;
     }
     const question = req.body;
     const result = await putQuestion(question, parseInt(req.params.id));
