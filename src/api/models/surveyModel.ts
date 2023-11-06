@@ -9,6 +9,7 @@ import {
   Survey
 } from '../../interfaces/Survey';
 import { deleteAllAnswersBySurvey } from './answerModel';
+import { deleteResultBySurvey } from './resultModel';
 
 const getAllSurveys = async (): Promise<Survey[]> => {
   const [rows] = await promisePool.execute<GetSurvey[]>(
@@ -195,6 +196,7 @@ const deleteAllSurveysFromHousingCompany = async (
   );
   console.log(surveys);
   for (const survey of surveys) {
+    await deleteResultBySurvey(survey.id, userID, role);
     await deleteAllAnswersBySurvey(survey.id, userID, role);
   }
   let sql = 'DELETE FROM surveys WHERE housing_company_id = ? AND user_id = ?;';

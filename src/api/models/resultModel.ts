@@ -122,4 +122,33 @@ const deleteResult = async (
   return true;
 };
 
-export { getAllResults, getResult, postResult, putResult, deleteResult };
+const deleteResultBySurvey = async (
+  surveyID: number,
+  userID: number,
+  role: string
+): Promise<boolean> => {
+  let sql = `DELETE results FROM results
+  JOIN surveys
+  ON results.survey_id = surveys.id
+  WHERE survey_id = ? AND surveys.user_id = ?;`;
+  let params = [surveyID, userID];
+  if (role === 'admin') {
+    sql = 'DELETE FROM results WHERE survey_id = ?;';
+    params = [surveyID];
+  }
+  const format = promisePool.format(sql, params);
+  const [headers] = await promisePool.query<ResultSetHeader>(format);
+  if (headers.affectedRows === 0) {
+    throw new CustomError('Results not deleted', 404);
+  }
+  return true;
+};
+
+export {
+  getAllResults,
+  getResult,
+  postResult,
+  putResult,
+  deleteResult,
+  deleteResultBySurvey
+};

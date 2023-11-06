@@ -18,6 +18,7 @@ import {
   checkIfHousingCompanyBelongsToUser,
   getApartmentCountByHousingCompany
 } from '../models/housingCompanyModel';
+import { deleteResultBySurvey } from '../models/resultModel';
 
 const surveyListGet = async (
   req: Request,
@@ -209,6 +210,7 @@ const surveyDelete = async (
   try {
     const userID = (req.user as User).id;
     const role = (req.user as User).role;
+    await deleteResultBySurvey(parseInt(req.params.id), userID, role);
     const result = await deleteSurvey(parseInt(req.params.id), userID, role);
     if (result) {
       const message: MessageResponse = {
